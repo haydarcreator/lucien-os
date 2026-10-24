@@ -59,7 +59,7 @@ convert "$WORK/logo-full.png" -resize 256x256 "$STAGE/assets/logo-256.png"
 
 log "Configuration dans le chroot ($EDITION)"
 for m in dev dev/pts proc sys run; do mount --bind "/$m" "$ROOTFS/$m"; done
-cp /etc/resolv.conf "$ROOTFS/etc/resolv.conf"
+rm -f "$ROOTFS/etc/resolv.conf"; cp -L /etc/resolv.conf "$ROOTFS/etc/resolv.conf"
 chroot "$ROOTFS" env EDITION="$EDITION" ARCH="$ARCH" VERSION="$VERSION" MIRROR="$MIRROR" SUITE="$SUITE" \
   DEBIAN_FRONTEND=noninteractive bash /tmp/lucien/build/chroot-setup.sh
 rm -rf "$STAGE"
