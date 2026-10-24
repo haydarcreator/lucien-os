@@ -217,7 +217,7 @@ def cmd_quarantaine(a):
 def cmd_maj(a):
     if shutil.which("freshclam"):
         subprocess.run(["freshclam"], check=False)
-    url = os.environ.get("LUCIEN_AV_URL", "https://lucien-os.github.io/av/hashes.txt")
+    url = os.environ.get("LUCIEN_AV_URL", "https://haydarcreator.github.io/lucien-os/av/hashes.txt")
     try:
         import urllib.request
         os.makedirs(DB_DIR, exist_ok=True)

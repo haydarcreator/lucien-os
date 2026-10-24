@@ -27,7 +27,7 @@ import urllib.request
 
 DB_DIR = os.environ.get("LPM_DB", "/var/lib/lpm")
 DB = os.path.join(DB_DIR, "installed.json")
-REPO = os.environ.get("LPM_REPO", "https://lucien-os.github.io/repo")
+REPO = os.environ.get("LPM_REPO", "https://haydarcreator.github.io/lucien-os/repo")
 ROOT = os.environ.get("LPM_ROOT", "/")
 ARCH = {"x86_64": "amd64", "aarch64": "arm64"}.get(os.uname().machine, os.uname().machine)
 

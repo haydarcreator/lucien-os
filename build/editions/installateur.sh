@@ -29,8 +29,8 @@ strings:
   versionedName: Lucien OS 1.0
   shortVersionedName: Lucien 1.0
   bootloaderEntryName: Lucien OS
-  productUrl: https://github.com/lucien-os/lucien-os
-  supportUrl: https://github.com/lucien-os/lucien-os/issues
+  productUrl: https://github.com/haydarcreator/lucien-os
+  supportUrl: https://github.com/haydarcreator/lucien-os/issues
 images:
   productLogo: logo.png
   productIcon: logo.png

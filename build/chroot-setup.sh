@@ -80,7 +80,7 @@ VERSION_CODENAME=$SUITE
 ID=lucien
 ID_LIKE="ubuntu debian"
 UBUNTU_CODENAME=$SUITE
-HOME_URL="https://github.com/lucien-os/lucien-os"
+HOME_URL="https://github.com/haydarcreator/lucien-os"
 LOGO=lucien
 EOF
 ln -sf /etc/os-release /usr/lib/os-release
