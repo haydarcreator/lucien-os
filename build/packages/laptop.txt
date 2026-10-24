@@ -1,9 +1,11 @@
 # Laptop (amd64) : comme le PC + autonomie, gestes, Wi-Fi, lecteur d'empreintes
 linux-generic-hwe-24.04
 casper
-grub-efi-amd64-signed
-shim-signed
+grub-efi-amd64-bin
 grub-pc-bin
+grub2-common
+efibootmgr
+os-prober
 calamares
 mesa-vulkan-drivers
 linux-firmware

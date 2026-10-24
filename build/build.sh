@@ -27,7 +27,7 @@ log() { printf '\033[38;5;215m==> %s\033[0m\n' "$*"; }
 log "Dépendances de l'hôte"
 apt-get update -qq
 apt-get install -y -qq debootstrap squashfs-tools xorriso mtools \
-  dosfstools parted kpartx rsync imagemagick xz-utils >/dev/null
+  dosfstools parted kpartx rsync imagemagick webp xz-utils >/dev/null
 if [ "$ARCH" = amd64 ]; then
   apt-get install -y -qq grub-pc-bin grub-efi-amd64-bin >/dev/null
 fi
@@ -51,10 +51,11 @@ STAGE="$ROOTFS/tmp/lucien"
 rm -rf "$STAGE"; mkdir -p "$STAGE"
 rsync -a --exclude work --exclude out --exclude .git "$REPO/" "$STAGE/"
 # Plymouth ne lit que le PNG : on convertit le logo et on fabrique la barre de progression
-convert "$REPO/assets/logo.webp" -resize 512x512 "$STAGE/boot/plymouth/lucien/logo.png"
+dwebp -quiet "$REPO/assets/logo.webp" -o "$WORK/logo-full.png"
+convert "$WORK/logo-full.png" -resize 512x512 "$STAGE/boot/plymouth/lucien/logo.png"
 convert -size 4x5 xc:'#eeeeee' "$STAGE/boot/plymouth/lucien/barre.png"
 convert -size 4x5 xc:'#333333' "$STAGE/boot/plymouth/lucien/barre-fond.png"
-convert "$REPO/assets/logo.webp" -resize 256x256 "$STAGE/assets/logo-256.png"
+convert "$WORK/logo-full.png" -resize 256x256 "$STAGE/assets/logo-256.png"
 
 log "Configuration dans le chroot ($EDITION)"
 for m in dev dev/pts proc sys run; do mount --bind "/$m" "$ROOTFS/$m"; done

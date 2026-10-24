@@ -4,6 +4,12 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      edition:
+        description: "Édition à construire"
+        type: choice
+        options: [all, laptop, pc, pi5]
+        default: all
 jobs:
   build:
     strategy:
@@ -16,12 +22,16 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v4
-      - name: Libérer de la place
+      - if: ${{ github.event_name != 'workflow_dispatch' || inputs.edition == 'all' || inputs.edition == matrix.edition }}
+        uses: actions/checkout@v4
+      - if: ${{ github.event_name != 'workflow_dispatch' || inputs.edition == 'all' || inputs.edition == matrix.edition }}
+        name: Libérer de la place
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
-      - name: Construire ${{ matrix.edition }}
+      - if: ${{ github.event_name != 'workflow_dispatch' || inputs.edition == 'all' || inputs.edition == matrix.edition }}
+        name: Construire ${{ matrix.edition }}
         run: sudo ./build/build.sh ${{ matrix.edition }}
-      - uses: actions/upload-artifact@v4
+      - if: ${{ github.event_name != 'workflow_dispatch' || inputs.edition == 'all' || inputs.edition == matrix.edition }}
+        uses: actions/upload-artifact@v4
         with:
           name: lucien-os-${{ matrix.edition }}
           path: out/*

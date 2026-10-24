@@ -61,9 +61,9 @@ tmp=$(mktemp -d)
 for r in WhiteSur-gtk-theme WhiteSur-icon-theme WhiteSur-cursors; do
   git clone -q --depth 1 "https://github.com/vinceliuice/$r.git" "$tmp/$r"
 done
-(cd "$tmp/WhiteSur-gtk-theme" && ./install.sh -d /usr/share/themes -c light -c dark >/dev/null)
-(cd "$tmp/WhiteSur-icon-theme" && ./install.sh -d /usr/share/icons >/dev/null)
-(cd "$tmp/WhiteSur-cursors" && cp -r dist /usr/share/icons/WhiteSur-cursors)
+(cd "$tmp/WhiteSur-gtk-theme" && ./install.sh -d /usr/share/themes -c light -c dark >/dev/null) || log "Attention : thème GTK WhiteSur non installé"
+(cd "$tmp/WhiteSur-icon-theme" && ./install.sh -d /usr/share/icons >/dev/null) || log "Attention : icônes WhiteSur non installées"
+(cd "$tmp/WhiteSur-cursors" && cp -r dist /usr/share/icons/WhiteSur-cursors) || log "Attention : curseurs WhiteSur non installés"
 rm -rf "$tmp"
 install -Dm644 "$S/settings/90_lucien.gschema.override" /usr/share/glib-2.0/schemas/90_lucien.gschema.override
 glib-compile-schemas /usr/share/glib-2.0/schemas
@@ -96,7 +96,7 @@ printf 'Lucien OS %s \\n \\l\n\n' "$VERSION" > /etc/issue
 sed -i 's/^DISTRIB_DESCRIPTION=.*/DISTRIB_DESCRIPTION="Lucien OS '"$VERSION"'"/' /etc/lsb-release
 
 log "Sécurité : pare-feu + antivirus temps réel"
-ufw default deny incoming >/dev/null; ufw default allow outgoing >/dev/null
+ufw default deny incoming >/dev/null || true; ufw default allow outgoing >/dev/null || true
 sed -i 's/^ENABLED=no/ENABLED=yes/' /etc/ufw/ufw.conf
 install -Dm644 "$S/antivirus/lucien-av.service" /usr/lib/systemd/user/lucien-av.service
 systemctl --global enable lucien-av.service
@@ -112,6 +112,9 @@ if [ -f "$S/build/editions/$EDITION.sh" ]; then
   # shellcheck source=/dev/null
   . "$S/build/editions/$EDITION.sh"
 fi
+
+log "Initramfs"
+update-initramfs -u -k all
 
 log "Nettoyage"
 apt-get clean

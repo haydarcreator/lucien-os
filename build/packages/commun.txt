@@ -25,6 +25,9 @@ language-pack-gnome-fr
 locales
 sudo
 git
+sassc
+libglib2.0-dev-bin
+libxml2-utils
 curl
 nano
 flatpak
