@@ -71,13 +71,14 @@ glib-compile-schemas /usr/share/glib-2.0/schemas
 log "Écran de démarrage"
 mkdir -p /usr/share/plymouth/themes/lucien
 cp "$S"/boot/plymouth/lucien/* /usr/share/plymouth/themes/lucien/
-plymouth-set-default-theme lucien || update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/lucien/lucien.plymouth 200
+plymouth-set-default-theme lucien 2>/dev/null || update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/lucien/lucien.plymouth 200
 sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"/' /etc/default/grub 2>/dev/null || true
 mkdir -p /etc/default/grub.d
 echo 'GRUB_DISTRIBUTOR="Lucien OS"' > /etc/default/grub.d/90-lucien.cfg 2>/dev/null || true
 
 log "Identité du système"
-cat > /etc/os-release <<EOF
+rm -f /etc/os-release
+cat > /usr/lib/os-release <<EOF
 PRETTY_NAME="Lucien OS $VERSION"
 NAME="Lucien OS"
 VERSION_ID="$VERSION"
@@ -89,7 +90,7 @@ UBUNTU_CODENAME=$SUITE
 HOME_URL="https://github.com/haydarcreator/lucien-os"
 LOGO=lucien
 EOF
-ln -sf /etc/os-release /usr/lib/os-release
+ln -sf ../usr/lib/os-release /etc/os-release
 echo "$EDITION" > /etc/lucien-edition
 echo lucien > /etc/hostname
 printf 'Lucien OS %s \\n \\l\n\n' "$VERSION" > /etc/issue
