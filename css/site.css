@@ -122,3 +122,8 @@ footer .fl{display:flex;gap:18px;flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 .doc h4{margin:18px 0 4px;font-size:16px}
 .post h4{margin:16px 0 0}
+.vids{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.vids figure{margin:0;padding:10px}
+.vids video{width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;display:block}
+.vids figcaption{padding:10px 6px 2px;color:var(--muted)}
+.vids figcaption b{color:var(--text)}

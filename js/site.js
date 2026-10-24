@@ -3,7 +3,7 @@
 const GITHUB = "https://github.com/haydarcreator/lucien-os";
 (function site() {
   const page = document.body.dataset.page;
-  const nav = [["index.html#fonctions", "Fonctions", "fonctions"], ["index.html#editions", "Éditions", "editions"], ["nouveautes.html", "Nouveautés", "nouveautes"], ["demo/", "Tester", "demo"]];
+  const nav = [["index.html#fonctions", "Fonctions", "fonctions"], ["index.html#editions", "Éditions", "editions"], ["index.html#videos", "Vidéos", "videos"], ["nouveautes.html", "Nouveautés", "nouveautes"], ["demo/", "Tester", "demo"]];
   const top = h(`<header class="top"><div class="wrap bar">
     <a class="brand" href="index.html"><img src="assets/logo.webp" alt="">Lucien OS</a>
     <nav class="links">${nav.map(([u, l, k]) => `<a href="${u}" class="${k === page ? "on" : ""}">${l}</a>`).join("")}<a href="${GITHUB}" rel="noopener">GitHub</a>

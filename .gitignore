@@ -6,3 +6,4 @@ out/
 __pycache__/
 .firebase/
 firebase-debug.log
+videos/*.mp4
