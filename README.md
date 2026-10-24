@@ -7,7 +7,9 @@
 
 ## Essayer la démo
 
-Ouvre [`index.html`](index.html) dans un navigateur, ou active **GitHub Pages** (le workflow `.github/workflows/pages.yml` la publie automatiquement à chaque push sur `main`).
+**Site officiel : https://lucienos.web.app** — nouveautés, [conditions d'utilisation](conditions.html), [politique de confidentialité](confidentialite.html) et la démo à tester directement (aussi sur [`demo/`](demo/index.html)).
+
+Le site est hébergé sur Firebase Hosting (projet `lucienos`). Pour le mettre à jour : `firebase deploy --only hosting`. GitHub Pages en publie aussi une copie à chaque push sur `main`.
 
 La démo reproduit tout le système dans le navigateur :
 
@@ -96,7 +98,8 @@ Sur le vrai système, Lucien Office est LibreOffice configuré avec l'interface 
 ## Structure du dépôt
 
 ```text
-index.html, css/, js/   démo web
+index.html, *.html     site (accueil, nouveautés, conditions, confidentialité)
+demo/, css/, js/       démo web
 assets/                 logo et fonds d'écran
 lsh/                    Lucien Shell
 lpm/                    gestionnaire de paquets (.lcn + .deb) et paquet d'exemple

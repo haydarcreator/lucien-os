@@ -4,3 +4,5 @@ out/
 *.img
 *.img.xz
 __pycache__/
+.firebase/
+firebase-debug.log

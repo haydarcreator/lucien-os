@@ -4,69 +4,98 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lucien OS</title>
-<meta name="description" content="Démo interactive de Lucien OS : un système Linux au style macOS pour Raspberry Pi 5, PC et laptop.">
+<meta name="description" content="Lucien OS : un système Linux élégant comme macOS pour Raspberry Pi 5, PC et laptop. Lucien Office, Lucien Shell, Lucien Browser, Lucien Antivirus. Testez-le directement dans votre navigateur.">
+<meta property="og:title" content="Lucien OS">
+<meta property="og:description" content="Élégant comme macOS, libre comme Linux. Testez-le directement dans votre navigateur.">
+<meta property="og:image" content="https://lucienos.web.app/assets/logo.webp">
 <link rel="icon" href="assets/logo.webp">
-<link rel="stylesheet" href="css/lucien.css">
-<link rel="stylesheet" href="css/office.css">
+<link rel="stylesheet" href="css/site.css">
 </head>
-<body>
+<body data-page="accueil">
 
-<!-- Écran de démarrage -->
-<div id="boot">
-  <img src="assets/logo.webp" alt="Logo Lucien OS">
-  <div class="bar"><i></i></div>
-  <div class="log"></div>
+<div class="hero">
+  <div class="wrap">
+    <img class="logo" src="assets/logo.webp" alt="Logo Lucien OS">
+    <div><a class="pill" href="nouveautes.html"><b>Nouveau</b> Lucien OS 1.0 « Os de Lune » est disponible <span data-i="fwd" data-s="14"></span></a></div>
+    <h1>Lucien OS</h1>
+    <p class="lead">Un système Linux élégant comme macOS, pour Raspberry Pi 5, PC et laptop. Avec sa suite bureautique, son shell, son navigateur et son antivirus.</p>
+    <div class="cta">
+      <a class="btn primary" href="demo/" data-start><span data-i="play" data-s="16"></span> Tester maintenant</a>
+      <a class="btn soft" href="#editions"><span data-i="download" data-s="16"></span> Obtenir Lucien OS</a>
+    </div>
+    <div class="device reveal" id="essayer">
+      <div class="screen">
+        <iframe title="Démo interactive de Lucien OS" data-src="demo/" allow="fullscreen"></iframe>
+        <div class="over"><div class="play"><span data-i="play" data-s="30"></span></div><b style="font-size:18px">Lancer la démo interactive</b><span style="opacity:.85;font-size:14px">Directement dans votre navigateur, sans rien installer</span></div>
+      </div>
+    </div>
+    <div class="device-foot">
+      <button class="btn soft sm" data-full><span data-i="expand" data-s="15"></span> Plein écran</button>
+      <a class="btn soft sm" href="demo/"><span data-i="arrow" data-s="15"></span> Ouvrir dans un nouvel onglet</a>
+    </div>
+    <div class="hint">Astuce : tapez n'importe quel mot de passe pour vous connecter. Clic droit sur le bureau pour créer des fichiers.</div>
+  </div>
 </div>
 
-<!-- Écran de connexion -->
-<div id="login" class="hidden">
-  <div class="clock"><div class="d" id="lgDate"></div><div class="t" id="lgTime"></div></div>
-  <div class="who">
-    <div class="avatar"></div>
-    <div class="name">Lucien</div>
-    <form id="lgForm"><input type="password" id="lgPass" placeholder="Mot de passe" autocomplete="off"><button class="go" aria-label="Se connecter" id="lgGo"></button></form>
-    <div class="hint">Démo : tape n'importe quel mot de passe puis Entrée</div>
+<section id="fonctions">
+  <div class="wrap">
+    <div class="kicker reveal">Tout est inclus</div>
+    <h2 class="t reveal">Tout ce qu'il faut, dès le premier démarrage.</h2>
+    <p class="sub reveal">Un bureau fluide et soigné, et des applications pensées pour fonctionner ensemble.</p>
+    <div class="grid">
+      <div class="card reveal" data-d="0"><div class="tile g-set"><span data-i="desktop"></span></div><h3>Un bureau façon macOS</h3><p>Barre de menus, Dock avec effet loupe, Launchpad, recherche, centre de contrôle et animations fluides.</p></div>
+      <div class="card reveal" data-d="60"><div class="tile g-texte"><span data-i="doc"></span></div><h3>Lucien Office</h3><p>Texte, Tableur et Présentation, avec le ruban que vous connaissez et les formats .docx, .xlsx et .pptx.</p></div>
+      <div class="card reveal" data-d="120"><div class="tile g-shell"><span data-i="terminal"></span></div><h3>Lucien Shell</h3><p>Un terminal aux commandes en français : liste, va, montre, soit… Toutes les commandes Linux marchent aussi.</p></div>
+      <div class="card reveal" data-d="0"><div class="tile g-browser"><span data-i="compass"></span></div><h3>Lucien Browser</h3><p>Un navigateur rapide qui bloque les pistes, avec navigation privée et téléchargements analysés.</p></div>
+      <div class="card reveal" data-d="60"><div class="tile g-av"><span data-i="shieldok"></span></div><h3>Lucien Antivirus</h3><p>Protection en temps réel, ClamAV, quarantaine et pare-feu activé par défaut.</p></div>
+      <div class="card reveal" data-d="120"><div class="tile g-store"><span data-i="package"></span></div><h3>.lcn et .deb</h3><p>Le nouveau format de paquet Lucien, signé et vérifié, plus tous les paquets Ubuntu.</p></div>
+      <div class="card reveal" data-d="0"><div class="tile g-files"><span data-i="globe"></span></div><h3>Toutes les langues</h3><p>Plus de 180 langues, 249 pays et territoires, tous les fuseaux horaires et des dizaines de claviers.</p></div>
+      <div class="card reveal" data-d="60"><div class="tile g-app"><span data-i="lock"></span></div><h3>Aucune télémétrie</h3><p>Lucien OS n'envoie aucune donnée sur vous. Disque chiffré, mises à jour de sécurité Ubuntu LTS.</p></div>
+    </div>
   </div>
-  <div class="bottom">
-    <button data-act="sleep"><span data-i="moon"></span>Suspendre</button>
-    <button data-act="restart"><span data-i="restart"></span>Redémarrer</button>
-    <button data-act="shutdown"><span data-i="power"></span>Éteindre</button>
-  </div>
-</div>
+</section>
 
-<!-- Bureau -->
-<div id="desktop" class="hidden">
-  <div id="menubar">
-    <div class="m logo" data-menu="lucien" title="Menu Lucien"></div>
-    <div class="m app" id="mbApp">Fichiers</div>
-    <div class="m opt" data-menu="fichier">Fichier</div>
-    <div class="m opt" data-menu="edition">Édition</div>
-    <div class="m opt" data-menu="presentation">Présentation</div>
-    <div class="m opt" data-menu="aller">Aller</div>
-    <div class="m opt" data-menu="fenetre">Fenêtre</div>
-    <div class="m opt" data-menu="aide">Aide</div>
-    <div class="sp"></div>
-    <div class="m opt" id="mbBat"></div>
-    <div class="m opt" id="mbWifi"></div>
-    <div class="m" id="mbSearch" title="Recherche (Ctrl+Espace)"></div>
-    <div class="m" id="mbCC" title="Centre de contrôle"></div>
-    <div class="m" id="mbClock"></div>
+<section class="alt" id="editions">
+  <div class="wrap">
+    <div class="kicker reveal">Trois éditions</div>
+    <h2 class="t reveal">Une édition pour chaque machine.</h2>
+    <p class="sub reveal">Chacune est basée sur Ubuntu 24.04 LTS et optimisée pour son matériel.</p>
+    <div class="grid">
+      <div class="card ed reveal"><div class="tile g-app"><span data-i="cpu"></span></div><h3>Raspberry Pi 5</h3><span class="tag">arm64 · image carte SD / SSD NVMe</span>
+        <ul><li>SSD NVMe via le port PCIe</li><li>Ventilateur actif géré automatiquement</li><li>Mémoire compressée (zram)</li><li>Partition agrandie au premier démarrage</li></ul>
+        <a class="btn soft sm" href="https://github.com/haydarcreator/lucien-os#construire-une-image" rel="noopener"><span data-i="download" data-s="15"></span> Obtenir l'image</a></div>
+      <div class="card ed reveal" data-d="80"><div class="tile g-set"><span data-i="display"></span></div><h3>PC de bureau</h3><span class="tag">amd64 · ISO live + installateur</span>
+        <ul><li>Pilotes graphiques Mesa et Vulkan</li><li>GameMode pour les jeux</li><li>Démarrage UEFI et BIOS</li><li>Installateur graphique avec chiffrement</li></ul>
+        <a class="btn soft sm" href="https://github.com/haydarcreator/lucien-os#construire-une-image" rel="noopener"><span data-i="download" data-s="15"></span> Obtenir l'ISO</a></div>
+      <div class="card ed reveal" data-d="160"><div class="tile g-files"><span data-i="desktop"></span></div><h3>Laptop</h3><span class="tag">amd64 · ISO live + installateur</span>
+        <ul><li>Autonomie optimisée (TLP)</li><li>Charge limitée à 80 % pour la batterie</li><li>Gestes du pavé tactile façon macOS</li><li>Lecteur d'empreintes digitales</li></ul>
+        <a class="btn soft sm" href="https://github.com/haydarcreator/lucien-os#construire-une-image" rel="noopener"><span data-i="download" data-s="15"></span> Obtenir l'ISO</a></div>
+    </div>
+    <p class="hint reveal" style="text-align:center;margin-top:24px">Les images téléchargeables arrivent avec la première version publiée sur GitHub. En attendant, elles se construisent avec <code>sudo ./build/build.sh pi5|pc|laptop</code>.</p>
   </div>
-  <div id="icons"></div>
-  <div id="wins"></div>
-  <div id="dock"></div>
-  <div id="notifs"></div>
-</div>
+</section>
 
-<div id="overlay"></div>
+<section id="nouveautes">
+  <div class="wrap">
+    <div class="kicker reveal">Nouveautés</div>
+    <h2 class="t reveal">Quoi de neuf ?</h2>
+    <div class="news">
+      <article class="post reveal"><div class="meta"><span class="ver">1.0</span><span>24 octobre 2026</span></div><h3>Lucien OS 1.0 « Os de Lune »</h3>
+        <p>La première version : trois éditions, Lucien Office, Lucien Shell, Lucien Browser, Lucien Antivirus et le format de paquet .lcn.</p>
+        <a href="nouveautes.html">Lire toutes les nouveautés <span data-i="fwd" data-s="14"></span></a></article>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap" style="text-align:center">
+    <h2 class="t reveal">Essayez-le maintenant.</h2>
+    <p class="sub reveal" style="margin:0 auto 28px">Aucune installation, aucun compte. La démo tourne entièrement dans votre navigateur.</p>
+    <div class="cta reveal"><a class="btn primary" href="demo/"><span data-i="play" data-s="16"></span> Lancer la démo</a><a class="btn soft" href="https://github.com/haydarcreator/lucien-os" rel="noopener"><span data-i="code" data-s="16"></span> Voir le code source</a></div>
+  </div>
+</section>
 
 <script src="js/core.js"></script>
-<script src="js/apps.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/office.js"></script>
-<script src="js/office-texte.js"></script>
-<script src="js/office-tableur.js"></script>
-<script src="js/office-presentation.js"></script>
-<script src="js/main.js"></script>
+<script src="js/site.js"></script>
 </body>
 </html>
