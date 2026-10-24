@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lucien Carnet
+Comment=Prise de notes
+Exec=lucien-webapp carnet
+Icon=accessories-text-editor
+Type=Application
+Categories=Office;
+StartupWMClass=lucien-webapp

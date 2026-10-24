@@ -30,7 +30,7 @@ function slideEl(sl, theme, mode) {
     Object.assign(el.style, { left: e.x + "px", top: e.y + "px", width: e.w + "px", height: e.h + "px" });
     if (e.type === "text") { el.innerHTML = e.html; if (e.ph) el.dataset.ph = e.ph; if (mode === "edit") el.contentEditable = "true"; }
     if (e.type === "img") el.innerHTML = `<img src="${e.src}" alt="">`;
-    if (e.type === "shape") { el.classList.add("shape"); el.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0"><g fill="${e.fill}">${{ rect: '<rect width="100" height="100" rx="4"/>', circle: '<ellipse cx="50" cy="50" rx="50" ry="50"/>', tri: '<path d="M50 0l50 100H0z"/>', arrow: '<path d="M0 30h65V5l35 45-35 45V70H0z"/>', star: '<path d="M50 0l14 32 36 3-27 23 8 35-31-18-31 18 8-35L0 35l36-3z"/>' }[e.shape]}</g></svg><div style="position:relative" ${mode === "edit" ? 'contenteditable="true"' : ""}>${e.html || ""}</div>`; }
+    if (e.type === "shape") { el.classList.add("shape"); el.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0"><g fill="${e.fill}">${{ rect: '<rect width="100" height="100" rx="4"/>', circle: '<ellipse cx="50" cy="50" rx="50" ry="50"/>', tri: '<path d="M50 0l50 100H0z"/>', arrow: '<path d="M0 30h65V5l35 45-35 45V70H0z"/>', hexa: '<path d="M25 2h50l24 48-24 48H25L1 50z"/>', penta: '<path d="M50 2l48 35-18 60H20L2 37z"/>', heart: '<path d="M50 96C10 66 0 44 6 26 14 4 40 2 50 22 60 2 86 4 94 26c6 18-4 40-44 70z"/>', bubble: '<path d="M8 4h84a6 6 0 0 1 6 6v54a6 6 0 0 1-6 6H40L18 96V70H8a6 6 0 0 1-6-6V10a6 6 0 0 1 6-6z"/>', rrect: '<rect width="100" height="100" rx="18"/>', diamond: '<path d="M50 0l50 50-50 50L0 50z"/>', cloud: '<path d="M26 86C10 86 2 74 4 62c2-12 14-18 22-16 0-20 18-32 34-28 12 3 18 12 20 20 10-2 18 6 18 16 0 16-10 32-26 32z"/>', larrow: '<path d="M100 30H35V5L0 50l35 45V70h65z"/>', cross: '<path d="M35 0h30v35h35v30H65v35H35V65H0V35h35z"/>', moon: '<path d="M60 4a46 46 0 1 0 36 70A40 40 0 0 1 60 4z"/>', star: '<path d="M50 0l14 32 36 3-27 23 8 35-31-18-31 18 8-35L0 35l36-3z"/>' }[e.shape]}</g></svg><div style="position:relative" ${mode === "edit" ? 'contenteditable="true"' : ""}>${e.html || ""}</div>`; }
     if (e.style) el.style.cssText += e.style;
     d.append(el);
   }
@@ -45,7 +45,7 @@ function PresentationApp(body, w, arg) {
       ["Diapositives", ["big", "plus", "Nouvelle diapositive", "newslide"], [[["sel", "layout", LAYOUT_NAMES, 140, "Disposition"]], [["btn", "restart", "Rétablir", "reset"]], [["btn", "trash", "Supprimer", "delslide"]]]],
       ["Police", [[["sel", "fontName", FONTS, 110, "Police"], ["sel", "fontSize", ["12", "14", "16", "18", "20", "24", "28", "32", "36", "44", "54", "60", "72", "96"], 50, "Taille"]], [["let", "<b>G</b>", "bold", "Gras"], ["let", "<i>I</i>", "italic", "Italique"], ["let", "<u>S</u>", "underline", "Souligné"], ["let", "<s>ab</s>", "strikeThrough", "Barré"], ["color", "fcolor", "foreColor", "#c43e1c", "Couleur de police"], ["btn", "x", null, "removeFormat", "Effacer la mise en forme"]]]],
       ["Paragraphe", [[["btn", "ul", null, "insertUnorderedList", "Puces"], ["btn", "ol", null, "insertOrderedList", "Numérotation"], ["btn", "outdent", null, "outdent", "Diminuer le niveau"], ["btn", "indent", null, "indent", "Augmenter le niveau"]], [["btn", "alignL", null, "justifyLeft", "Aligner à gauche"], ["btn", "alignC", null, "justifyCenter", "Centrer"], ["btn", "alignR", null, "justifyRight", "Aligner à droite"], ["btn", "justify", null, "justifyFull", "Justifier"]]]],
-      ["Dessin", [[["btn", "rect", null, "shape-rect", "Rectangle"], ["btn", "circle", null, "shape-circle", "Ellipse"], ["btn", "tri", null, "shape-tri", "Triangle"]], [["btn", "arrow", null, "shape-arrow", "Flèche"], ["btn", "star", null, "shape-star", "Étoile"], ["color", "fill", "shapeFill", "#4472c4", "Remplissage"]]], ["big", "layout", "Organiser", "arrange"]],
+      ["Dessin", [[["btn", "rect", null, "shape-rect", "Rectangle"], ["btn", "circle", null, "shape-circle", "Ellipse"], ["btn", "tri", null, "shape-tri", "Triangle"]], [["btn", "shape", null, "shapes", "Toutes les formes"], ["btn", "arrow", null, "shape-arrow", "Flèche"], ["btn", "star", null, "shape-star", "Étoile"], ["color", "fill", "shapeFill", "#4472c4", "Remplissage"]]], ["big", "layout", "Organiser", "arrange"]],
       ["Édition", [[["btn", "search", "Rechercher", "find"]], [["btn", "replace", "Remplacer", "replace"]], [["btn", "select", "Sélectionner", "selectAll"]]]]
     ],
     "Insertion": [
@@ -70,7 +70,8 @@ function PresentationApp(body, w, arg) {
     ],
     "Diaporama": [
       ["Démarrer le diaporama", ["big", "present", "À partir du début", "showstart"], ["big", "play", "À partir de la diapositive actuelle", "showcur"]],
-      ["Configuration", ["big", "eye", "Masquer la diapositive", "hide"], ["big", "speak", "Lire les notes", "speak"]]
+      ["Présentateur", ["big", "users", "Mode présentateur", "presenter"], ["big", "zap", "Pointeur laser", "laserinfo"]],
+      ["Configuration", ["big", "eye", "Masquer la diapositive", "hide"], ["big", "speak", "Lire les notes", "speak"], ["big", "pdf", "Exporter en PDF", "pdf"]]
     ],
     "Révision": [
       ["Vérification", ["big", "spell", "Orthographe", "spell"], ["big", "count", "Statistiques", "stats"]],
@@ -92,7 +93,10 @@ function PresentationApp(body, w, arg) {
     { l: "Océan", pv: pv("ocean"), make: tplDeck("ocean", [T2("Titre de la présentation", "Sous-titre")]) },
     { l: "Nuit", pv: pv("nuit"), make: tplDeck("nuit", [T2("Titre de la présentation", "Sous-titre")]) },
     { l: "Forêt", pv: pv("foret"), make: tplDeck("foret", [T2("Titre de la présentation", "Sous-titre")]) },
-    { l: "Ardoise", pv: pv("ardoise"), make: tplDeck("ardoise", [T2("Titre de la présentation", "Sous-titre")]) }
+    { l: "Ardoise", pv: pv("ardoise"), make: tplDeck("ardoise", [T2("Titre de la présentation", "Sous-titre")]) },
+    { l: "Exposé (école)", pv: pv("corail"), make: tplDeck("corail", [T2("Mon exposé", "Prénom Nom · Classe"), C2("Plan", ["Introduction", "Partie 1", "Partie 2", "Conclusion"]), C2("Introduction", ["Pourquoi ce sujet ?", "La problématique"]), C2("Conclusion", ["Ce qu'il faut retenir", "Merci de votre attention !"])]) },
+    { l: "Projet", pv: pv("ocean"), make: tplDeck("ocean", [T2("Nom du projet", "Présentation à l'équipe"), C2("Objectifs", ["Objectif 1", "Objectif 2", "Objectif 3"]), C2("Calendrier", ["Étape 1 : cadrage", "Étape 2 : réalisation", "Étape 3 : lancement"]), C2("Budget et ressources", ["Équipe", "Budget", "Outils"])]) },
+    { l: "Bilan", pv: pv("foret"), make: tplDeck("foret", [T2("Bilan de l'année", new Date().getFullYear().toString()), C2("Réussites", ["…"]), C2("Difficultés", ["…"]), C2("Perspectives", ["…"])]) }
   ];
   const api = OfficeShell(body, w, {
     id: "presentation", kind: "presentation", color: "#c43e1c", ext: "lpre", exts: ["lpre", "pptx"], untitled: "Présentation1", first: "Accueil", tabs, templates,
@@ -190,22 +194,33 @@ function PresentationApp(body, w, arg) {
   const addEl = (e) => { snap(); const d = { id: pelId++, x: 330, y: 190, w: 300, h: 160, html: "", anim: "", ...e }; slide().els.push(d); selEl = d.id; drawAll(); return d; };
 
   /* ---------- diaporama ---------- */
-  function present(start) {
+  function present(start, presenter = false) {
     const order = deck.slides.map((s, i) => i).filter(i => !deck.slides[i].hidden);
-    let pos = Math.max(0, order.indexOf(start)); if (order.indexOf(start) < 0) pos = 0;
-    let steps = [], step = 0, ended = false;
-    const ov = h(`<div class="show"><div class="holder"></div><div class="bar">Clic ou → : suivant · ← : précédent · Échap : quitter</div></div>`);
+    let pos = Math.max(0, order.indexOf(start)), steps = [], step = 0, ended = false, laser = false, t0 = Date.now(), paused = 0, pauseAt = null;
+    const ov = presenter
+      ? h(`<div class="pview"><div class="ptop"><b>Mode présentateur</b><span class="ptimer">00:00</span><button class="tool" data-pause>Pause</button><button class="tool" data-reset>Remettre à zéro</button><span style="flex:1"></span><span class="pcount"></span><span class="pclock"></span></div>
+          <div class="pcur"><div class="holder" style="position:absolute"></div></div><div class="pside"><div><small>Diapositive suivante</small><div class="pnext" style="aspect-ratio:16/9"></div></div><div class="pnotesv"></div></div>
+          <div class="pctl"><button data-prev>${svg("back", 16)} Précédente</button><button data-next>Suivante ${svg("fwd", 16)}</button><button data-laser>${svg("zap", 16)} Pointeur laser (L)</button><button data-zoomn>${svg("zoomin", 16)} Notes plus grandes</button><button data-end>${svg("x", 16)} Fin du diaporama</button></div></div>`)
+      : h(`<div class="show"><div class="holder"></div><div class="bar">Clic ou → : suivant · ← : précédent · L : pointeur laser · Échap : quitter</div></div>`);
     document.body.append(ov); try { ov.requestFullscreen?.(); } catch {}
-    const holderS = $(".holder", ov);
+    const holderS = $(".holder", ov), host = presenter ? $(".pcur", ov) : ov, dot = h(`<div class="laser hidden"></div>`);
+    document.body.append(dot);
+    const fit = (el, box) => { const r = box.getBoundingClientRect(), k = Math.min(r.width / W(), r.height / 540); el.style.transform = `scale(${k})`; return k; };
     const render = (dir = 1) => {
       ended = false; holderS.innerHTML = "";
       const s = deck.slides[order[pos]]; const el = slideEl(s, deck.theme, "show");
-      const k = Math.min(innerWidth / W(), innerHeight / 540);
-      holderS.style.width = W() * k + "px"; holderS.style.height = 540 * k + "px"; el.style.transform = `scale(${k})`;
       if (deck.ratio === "43") el.classList.add("r43");
+      const k = fit(el, host); holderS.style.width = W() * k + "px"; holderS.style.height = 540 * k + "px";
+      if (presenter) { const r = host.getBoundingClientRect(); holderS.style.left = (r.width - W() * k) / 2 + "px"; holderS.style.top = (r.height - 540 * k) / 2 + "px"; }
       const wrapT = h(`<div style="position:absolute;inset:0"></div>`); wrapT.append(el); holderS.append(wrapT);
       if (dir > 0 && s.trans && s.trans !== "aucune") wrapT.classList.add("tr-" + s.trans);
       steps = $$(".pel", el).filter(p => elDataIn(s, p.dataset.id)?.anim); steps.forEach(p => p.classList.add("an-hide")); step = 0;
+      if (presenter) {
+        const nb = $(".pnext", ov); nb.innerHTML = ""; nb.style.position = "relative";
+        if (pos < order.length - 1) { const n = slideEl(deck.slides[order[pos + 1]], deck.theme, "show"); n.style.position = "absolute"; fit(n, nb); n.style.transformOrigin = "0 0"; nb.append(n); } else nb.innerHTML = '<div style="color:#888;padding:20px">Fin de la présentation</div>';
+        $(".pnotesv", ov).textContent = s.notes || "Aucune note pour cette diapositive.";
+        $(".pcount", ov).textContent = `Diapositive ${pos + 1} sur ${order.length}`;
+      }
     };
     const elDataIn = (s, id) => s.els.find(e => e.id === +id);
     const next = () => {
@@ -214,11 +229,32 @@ function PresentationApp(body, w, arg) {
       if (pos < order.length - 1) { pos++; render(); } else { ended = true; holderS.innerHTML = `<div class="end">Fin du diaporama. Cliquez pour quitter.</div>`; holderS.style.width = "auto"; holderS.style.height = "auto"; }
     };
     const prev = () => { if (pos > 0) { pos--; render(-1); } };
-    const key = (e) => { if (["ArrowRight", " ", "Enter", "PageDown", "n", "N"].includes(e.key)) { e.preventDefault(); next(); } if (["ArrowLeft", "PageUp", "p", "P", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); } if (e.key === "Escape") exit(); };
-    const exit = () => { removeEventListener("keydown", key, true); if (document.fullscreenElement) document.exitFullscreen?.(); ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: "forwards" }); setTimeout(() => ov.remove(), 250); };
-    addEventListener("keydown", key, true);
-    ov.onclick = next; ov.oncontextmenu = (e) => { e.preventDefault(); prev(); };
-    render();
+    const setLaser = (on) => { laser = on; dot.classList.toggle("hidden", !on); ov.classList.toggle("laseron", on); };
+    const key = (e) => {
+      if (["ArrowRight", " ", "Enter", "PageDown", "n", "N"].includes(e.key)) { e.preventDefault(); next(); }
+      if (["ArrowLeft", "PageUp", "p", "P", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+      if (e.key === "l" || e.key === "L") setLaser(!laser);
+      if (e.key === "b" || e.key === "B") holderS.style.visibility = holderS.style.visibility ? "" : "hidden";
+      if (e.key === "Escape") exit();
+    };
+    const mv = (e) => { if (laser) { dot.style.left = e.clientX + "px"; dot.style.top = e.clientY + "px"; } };
+    const tick = setInterval(() => {
+      if (!presenter) return;
+      const ms = (pauseAt || Date.now()) - t0 - paused, s2 = Math.floor(ms / 1000);
+      $(".ptimer", ov).textContent = `${String(Math.floor(s2 / 60)).padStart(2, "0")}:${String(s2 % 60).padStart(2, "0")}`;
+      $(".pclock", ov).textContent = new Date().toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit", timeZone: S.tz });
+    }, 500);
+    const onResize = () => render(0);
+    const exit = () => { removeEventListener("keydown", key, true); removeEventListener("mousemove", mv); removeEventListener("resize", onResize); clearInterval(tick); dot.remove(); if (document.fullscreenElement) document.exitFullscreen?.(); ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: "forwards" }); setTimeout(() => ov.remove(), 250); };
+    addEventListener("keydown", key, true); addEventListener("mousemove", mv); addEventListener("resize", onResize);
+    if (presenter) {
+      $(".pcur", ov).onclick = next; $("[data-next]", ov).onclick = next; $("[data-prev]", ov).onclick = prev; $("[data-end]", ov).onclick = exit;
+      $("[data-laser]", ov).onclick = () => setLaser(!laser);
+      $("[data-zoomn]", ov).onclick = () => { const n = $(".pnotesv", ov); n.style.fontSize = (parseFloat(getComputedStyle(n).fontSize) + 4) + "px"; };
+      $("[data-pause]", ov).onclick = (e) => { if (pauseAt) { paused += Date.now() - pauseAt; pauseAt = null; e.target.textContent = "Pause"; } else { pauseAt = Date.now(); e.target.textContent = "Reprendre"; } };
+      $("[data-reset]", ov).onclick = () => { t0 = Date.now(); paused = 0; pauseAt = null; };
+    } else { ov.onclick = next; ov.oncontextmenu = (e) => { e.preventDefault(); prev(); }; }
+    setTimeout(() => render(), presenter ? 60 : 0);
   }
 
   async function onCmd(c, v) {
@@ -263,6 +299,10 @@ function PresentationApp(body, w, arg) {
       case "preview": { const s = $(".sld", holder); const t = slide().trans; s.classList.remove(...[...s.classList].filter(x => x.startsWith("tr-"))); void s.offsetWidth; if (t && t !== "aucune") s.classList.add("tr-" + t); slide().els.filter(e => e.anim).forEach((e, i) => { const el = $(`.pel[data-id="${e.id}"]`, holder); el.classList.add("an-hide"); setTimeout(() => { el.classList.remove("an-hide"); el.classList.add("an-" + e.anim); }, 500 + i * 700); }); return; }
       case "showstart": return present(0);
       case "showcur": return present(cur);
+      case "presenter": return present(cur, true);
+      case "laserinfo": return notify("presentation", "Pointeur laser", "Pendant le diaporama, appuyez sur L pour afficher le pointeur laser (B pour un écran noir).");
+      case "pdf": { const pr = deck.slides.map(s => `<div style="page-break-after:always;width:960px;height:540px;overflow:hidden;position:relative">${slideEl(s, deck.theme, "show").outerHTML}</div>`).join(""); const css = [...document.styleSheets].map(ss => { try { return [...ss.cssRules].map(r => r.cssText).join("\n"); } catch { return ""; } }).join("\n"); printHTML(api.doc.name, pr, css + "@page{size:960px 540px;margin:0}body{margin:0}"); return notify("presentation", "Exporter en PDF", "Choisissez « Enregistrer en PDF » dans la fenêtre d'impression."); }
+      case "shapes": { const names = { rect: "Rectangle", rrect: "Rectangle arrondi", circle: "Ellipse", tri: "Triangle", diamond: "Losange", penta: "Pentagone", hexa: "Hexagone", star: "Étoile", heart: "Cœur", cloud: "Nuage", bubble: "Bulle de dialogue", arrow: "Flèche droite", larrow: "Flèche gauche", cross: "Croix", moon: "Lune" }; const r = await dialog(w, "Formes", [{ k: "s", l: "Forme", type: "select", o: Object.values(names) }], "Insérer"); if (!r) return; const k = Object.keys(names).find(x => names[x] === r.s); return addEl({ type: "shape", shape: k, fill: "#4472c4", w: 220, h: 160 }); }
       case "hide": snap(); slide().hidden = !slide().hidden; return drawThumbs();
       case "speak": { const u = new SpeechSynthesisUtterance(slide().notes || "Aucune note pour cette diapositive."); u.lang = locale(); speechSynthesis.speak(u); return; }
       case "spell": $$(".pel[contenteditable]", holder).forEach(p => p.spellcheck = true); return notify("presentation", "Orthographe", "Vérification activée.");

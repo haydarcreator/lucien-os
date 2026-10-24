@@ -110,6 +110,12 @@ html.theming *{transition:background-color .45s var(--ease),color .45s var(--eas
 .t-texte{background:linear-gradient(#4a82d8,#1e4f9c)}
 .t-tableur{background:linear-gradient(#2fbf74,#107c41)}
 .t-presentation{background:linear-gradient(#f2875f,#c43e1c)}
+.t-office{background:linear-gradient(#ff7a59,#d83b01)}
+.t-carnet{background:linear-gradient(#a855f7,#7719aa)}
+.t-taches{background:linear-gradient(#5aa9ff,#2564cf)}
+.t-form{background:linear-gradient(#36c08b,#008272)}
+.t-code{background:linear-gradient(#3fa7ff,#0065a9)}
+.t-calc{background:linear-gradient(#ffb340,#ff8a00)}
 .t-launch{background:linear-gradient(#9aa4b5,#59616f)}
 .t-apercu{background:linear-gradient(#8fd3ff,#3c8fd6)}
 .t-deb{background:linear-gradient(#ff8a5c,#e95420)}
@@ -327,3 +333,4 @@ textarea.notes{width:100%;height:100%;border:0;outline:none;resize:none;backgrou
   .main{padding:14px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media (max-width:1200px){#dock .it{width:40px;height:40px}#dock{height:54px}}

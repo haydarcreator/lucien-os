@@ -46,6 +46,12 @@ for app in writer calc impress; do
 done
 install -Dm644 "$S/office/registrymodifications.xcu" /etc/skel/.config/libreoffice/4/user/registrymodifications.xcu
 
+log "Apps web Lucien (Calculator, Code, Carnet, Tâches, Formulaires)"
+mkdir -p /usr/share/lucien/web
+cp -r "$S/demo" "$S/css" "$S/js" "$S/assets" /usr/share/lucien/web/
+install -Dm755 "$S/webapp/lucien-webapp.py" /usr/bin/lucien-webapp
+cp "$S"/webapp/*.desktop /usr/share/applications/
+
 log "Type MIME .lcn → double-clic = installation"
 install -Dm644 "$S/build/desktop/lucien-lcn.xml" /usr/share/mime/packages/lucien-lcn.xml
 update-mime-database /usr/share/mime

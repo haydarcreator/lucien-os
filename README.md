@@ -21,7 +21,9 @@ La démo reproduit tout le système dans le navigateur :
 | Fichiers | Navigation, favoris, vue icônes ou liste, recherche, corbeille avec restauration |
 | Lucien Shell | Terminal avec commandes en français (`aide`, `liste`, `va`, `montre`, `lpm`, `scan`, `lucienfetch`…) |
 | Lucien Browser | Onglets, page d'accueil privée, bloqueur de pistes |
-| Lucien Office | **Lucien Texte**, **Lucien Tableur**, **Lucien Présentation** : ruban (Accueil, Insertion, Création, Mise en page, Références, Formules, Données, Transitions, Animations, Diaporama, Révision, Affichage), menu Fichier (Nouveau, Ouvrir, Enregistrer, Imprimer, Exporter), modèles |
+| Lucien Office | Accueil Office, **Lucien Carnet**, **Lucien Tâches**, **Lucien Formulaires**, **Lucien Texte** (suivi des modifications, commentaires, dictée, export .docx), **Lucien Tableur** (recopie, mise en forme conditionnelle, filtres, 80+ fonctions), **Lucien Présentation** (mode présentateur, laser) : ruban (Accueil, Insertion, Création, Mise en page, Références, Formules, Données, Transitions, Animations, Diaporama, Révision, Affichage), menu Fichier (Nouveau, Ouvrir, Enregistrer, Imprimer, Exporter), modèles |
+| Lucien Calculator | 8 modes dont graphiques, équations avec étapes, statistiques et géométrie |
+| Lucien Code | Éditeur de code avec terminal, aperçu HTML et console |
 | Lucien Antivirus | Analyse rapide/complète, quarantaine, temps réel, pare-feu, mises à jour |
 | Lucien Store | Paquets `.lcn` (Lucien) et `.deb` (Ubuntu) |
 | Paramètres | Wi-Fi, Bluetooth, son, apparence, fond d'écran, **toutes les langues (ISO 639-1) et toutes les régions du monde (249 pays et territoires)**, fuseaux horaires, calendriers, chiffres, claviers, démarrage, édition matérielle… |
@@ -89,6 +91,16 @@ Commandes en français (`liste`, `va`, `ici`, `montre`, `dis`, `cree`, `dossier`
 ## Lucien Office
 
 Sur le vrai système, Lucien Office est LibreOffice configuré avec l'interface en ruban et les formats `.docx`, `.xlsx`, `.pptx` par défaut, présenté sous les noms Lucien Texte, Lucien Tableur et Lucien Présentation (`office/`).
+
+## Lucien Calculator
+
+Une calculatrice faite pour apprendre : Standard, Scientifique (fractions et valeurs exactes comme 2√2 ou π/2), Programmeur (hexadécimal, binaire, bits), **Graphiques** (curseurs a, b, c, racines, extremums, intersections, dérivée, aire, tableau de valeurs), **Équations** avec les étapes (1er et 2nd degré, systèmes 2×2 et 3×3, équation libre), **Statistiques** (quartiles, écart-type, histogramme, boîte à moustaches, régression), **Géométrie** (14 figures) et Conversions (13 catégories).
+
+## Lucien Code
+
+Un éditeur de code façon Visual Studio Code, sans magasin d'extensions : explorateur, onglets, coloration de 12 langages, minicarte, palette de commandes (Ctrl+Maj+P), ouverture rapide (Ctrl+P), recherche et remplacement dans les fichiers, terminal Lucien Shell intégré, aperçu HTML en direct (F5), console JavaScript, problèmes, contrôle de version.
+
+Sur le système installé, Calculator, Code, Carnet, Tâches et Formulaires s'ouvrent dans leur propre fenêtre avec `lucien-webapp` (même code que la démo).
 
 ## Lucien Browser et Lucien Antivirus
 

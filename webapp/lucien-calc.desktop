@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lucien Calculator
+Comment=Calculatrice scientifique, graphiques, équations et statistiques
+Exec=lucien-webapp calc
+Icon=accessories-calculator
+Type=Application
+Categories=Education;Math;Utility;
+StartupWMClass=lucien-webapp

@@ -146,6 +146,10 @@ const IC = {
   rect: '<rect x="4" y="6" width="16" height="12" rx="1"/>',
   tri: '<path d="M12 4l9 16H3z"/>',
   star: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
+  calc: '<rect x="5" y="2.5" width="14" height="19" rx="3"/><rect x="8" y="5.5" width="8" height="4" rx="1"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/>',
+  office: '<path d="M4 6l8-3 8 3v12l-8 3-8-3z"/><path d="M12 3v18M4 6l8 3 8-3"/>',
+  notebook: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M12 8h4M12 12h4"/>',
+  form: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h5"/><circle cx="8" cy="16.5" r="1.2"/><path d="M11 16.5h5"/>',
   logout: '<path d="M10 4H5v16h5M15 8l4 4-4 4M9 12h10"/>'
 };
 const svg = (n, s = 16, sw = 1.8) => `<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n] || ""}</svg>`;
@@ -281,7 +285,7 @@ const FTYPES = {
   lpre: ["slides", "t-presentation", "presentation"], pptx: ["slides", "t-presentation", "presentation"],
   lcn: ["logo", "img", "store"], deb: ["package", "t-deb", "store"], exe: ["warn", "t-warn", "av"],
   webp: ["image", "t-img", "apercu"], png: ["image", "t-img", "apercu"], jpg: ["image", "t-img", "apercu"], jpeg: ["image", "t-img", "apercu"], gif: ["image", "t-img", "apercu"], svg: ["image", "t-img", "apercu"],
-  lsh: ["terminal", "t-shell", "apercu"], mp3: ["music", "t-store", "apercu"], pdf: ["pdf", "t-warn", "apercu"]
+  lsh: ["terminal", "t-shell", "code"], js: ["code", "t-code", "code"], ts: ["code", "t-code", "code"], json: ["code", "t-code", "code"], css: ["code", "t-code", "code"], html: ["code", "t-code", "code"], py: ["code", "t-code", "code"], md: ["file", "t-txt", "code"], mp3: ["music", "t-store", "apercu"], pdf: ["pdf", "t-warn", "apercu"]
 };
 function fileIcon(name, n, cls = "") {
   if (n.type === "dir") return `<div class="icon t-files ${cls}">${svg("folder")}</div>`;
@@ -305,6 +309,12 @@ const APPS = {
   texte:        { name: "Lucien Texte", ic: "doc", cls: "t-texte", w: 1040, h: 660, render: "TexteApp", office: true },
   tableur:      { name: "Lucien Tableur", ic: "sheet", cls: "t-tableur", w: 1040, h: 640, render: "TableurApp", office: true },
   presentation: { name: "Lucien Présentation", ic: "slides", cls: "t-presentation", w: 1080, h: 660, render: "PresentationApp", office: true },
+  office:       { name: "Lucien Office", ic: "office", cls: "t-office", w: 900, h: 600, render: "OfficeHubApp" },
+  carnet:       { name: "Lucien Carnet", ic: "notebook", cls: "t-carnet", w: 1040, h: 640, render: "CarnetApp", office: true },
+  taches:       { name: "Lucien Tâches", ic: "check", cls: "t-taches", w: 860, h: 560, render: "TachesApp", office: true },
+  formulaires:  { name: "Lucien Formulaires", ic: "form", cls: "t-form", w: 880, h: 620, render: "FormulairesApp", office: true },
+  code:         { name: "Lucien Code", ic: "code", cls: "t-code", w: 1100, h: 680, render: "CodeApp" },
+  calc:         { name: "Lucien Calculator", ic: "calc", cls: "t-calc", w: 860, h: 560, render: "CalculatorApp" },
   av:           { name: "Lucien Antivirus", ic: "shieldok", cls: "t-av", w: 740, h: 500, render: "AvApp" },
   store:        { name: "Lucien Store", ic: "bag", cls: "t-store", w: 880, h: 570, render: "StoreApp" },
   notes:        { name: "Notes", ic: "note", cls: "t-notes", w: 520, h: 420, render: "NotesApp" },
@@ -314,7 +324,7 @@ const APPS = {
   about:        { name: "À propos de Lucien OS", ic: "info", cls: "t-store", w: 480, h: 420, render: "AboutApp", hide: true },
   trash:        { name: "Corbeille", ic: "trash", cls: "t-trash", w: 580, h: 400, render: "TrashApp" }
 };
-const DOCK = ["launch", "files", "shell", "browser", "texte", "tableur", "presentation", "av", "store", "notes", "settings", "|", "trash"];
+const DOCK = ["launch", "files", "shell", "browser", "office", "texte", "tableur", "presentation", "calc", "code", "av", "store", "notes", "settings", "|", "trash"];
 const appIcon = (id, extra = "") => id === "launch" ? `<div class="icon t-launch" ${extra}>${svg("grid")}</div>` : `<div class="icon ${APPS[id].cls}" ${extra}>${svg(APPS[id].ic)}</div>`;
 
 /* ================= Gestionnaire de fenêtres ================= */
@@ -429,7 +439,7 @@ function buildDock() {
   d.onmouseenter = () => { centers = $$(".it", d).map(it => { const r = it.getBoundingClientRect(); return r.left + r.width / 2; }); d.classList.remove("settle"); };
   d.onmousemove = (e) => {
     if (!S.magnify || innerWidth <= 700 || !centers) return;
-    $$(".it", d).forEach((it, i) => { const dist = Math.abs(e.clientX - centers[i]); const k = Math.max(0, 1 - dist / 160); const s = 50 + 28 * Math.sin(k * Math.PI / 2) ** 2; it.style.width = it.style.height = s + "px"; });
+    $$(".it", d).forEach((it, i) => { const dist = Math.abs(e.clientX - centers[i]); const k = Math.max(0, 1 - dist / 160); const s = (innerWidth < 1200 ? 40 : 50) + 26 * Math.sin(k * Math.PI / 2) ** 2; it.style.width = it.style.height = s + "px"; });
   };
   d.onmouseleave = () => { d.classList.add("settle"); $$(".it", d).forEach(it => it.style.width = it.style.height = ""); centers = null; };
   refreshDock();

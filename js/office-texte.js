@@ -10,6 +10,7 @@ function TexteApp(body, w, arg) {
       ["Paragraphe", [[["btn", "ul", null, "insertUnorderedList", "Puces"], ["btn", "ol", null, "insertOrderedList", "Numérotation"], ["btn", "outdent", null, "outdent", "Diminuer le retrait"], ["btn", "indent", null, "indent", "Augmenter le retrait"], ["sel", "lineHeight", [["1", "1,0"], ["1.15", "1,15"], ["1.5", "1,5"], ["2", "2,0"], ["2.5", "2,5"], ["3", "3,0"]], 56, "Interligne"]],
         [["btn", "alignL", null, "justifyLeft", "Aligner à gauche"], ["btn", "alignC", null, "justifyCenter", "Centrer"], ["btn", "alignR", null, "justifyRight", "Aligner à droite"], ["btn", "justify", null, "justifyFull", "Justifier"], ["color", "fill", "blockBg", "#deeaf6", "Trame de fond"]]]],
       ["Styles", ["gal", "style", [["p", "AaBbCc", "", "Normal"], ["div", "AaBbCc", "", "Sans interligne"], ["h1", "AaBb", "font-size:18px;color:#1f3864;font-weight:300", "Titre"], ["h2", "AaBbC", "color:#2f5496", "Titre 1"], ["h3", "AaBbC", "color:#1f3763;font-size:11px", "Titre 2"], ["blockquote", "<i>AaBbCc</i>", "color:#404040", "Citation"], ["pre", "AaBb", "font-family:Consolas,monospace", "Code"]]]],
+      ["Voix", ["big", "speak", "Dicter", "dictate"]],
       ["Édition", [[["btn", "search", "Rechercher", "find"]], [["btn", "replace", "Remplacer", "replace"]], [["btn", "select", "Sélectionner", "selectAll"]]]]
     ],
     "Insertion": [
@@ -37,7 +38,8 @@ function TexteApp(body, w, arg) {
     "Révision": [
       ["Vérification", ["big", "spell", "Orthographe", "spell"], ["big", "count", "Statistiques", "wordcount"]],
       ["Voix", ["big", "speak", "Lecture à voix haute", "speak"]],
-      ["Commentaires", ["big", "comment", "Nouveau commentaire", "comment"], ["big", "x", "Supprimer", "delcomments"]],
+      ["Commentaires", ["big", "comment", "Nouveau commentaire", "comment"], ["big", "note", "Volet des commentaires", "cmtpane"], ["big", "x", "Supprimer tout", "delcomments"]],
+      ["Suivi", ["big", "pen", "Suivi des modifications", "track"], [[["btn", "check", "Accepter tout", "acceptall"]], [["btn", "x", "Refuser tout", "rejectall"]], [["btn", "eye", "Afficher les marques", "showmarks"]]]],
       ["Langue", ["big", "globe", "Langue", "lang"]]
     ],
     "Affichage": [
@@ -57,24 +59,123 @@ function TexteApp(body, w, arg) {
   ];
   const api = OfficeShell(body, w, {
     id: "texte", kind: "texte", color: "#2b579a", ext: "ltxt", exts: ["ltxt", "docx", "doc", "txt"], untitled: "Document1", first: "Accueil", tabs, templates,
-    exportLabel: "Page web .html (s'ouvre dans Word, LibreOffice…)",
-    onCmd, getContent: () => page.innerHTML, load,
-    status: () => { const words = (page.innerText.match(/\S+/g) || []).length; const pages = Math.max(1, Math.ceil(page.scrollHeight / (page.classList.contains("land") ? 794 : 1123))); return `<span>Page 1 sur ${pages}</span><span>${words} mot${words > 1 ? "s" : ""}</span><span>${esc(langName(S.lang))} (${esc(regionName(S.region))})</span><span class="sp"></span><button data-z="-">${svg("minus", 12)}</button><input type="range" min="50" max="200" value="${zoom}"><button data-z="+">${svg("plus", 12)}</button><span>${zoom} %</span>`; },
+    exportLabel: "Document Word .docx (Microsoft Word, LibreOffice, Google Docs)",
+    onCmd, getContent: () => cleanHTML(), load,
+    status: () => { const words = (page.innerText.match(/\S+/g) || []).length; const pages = pageCount(); return `<span>Page ${curPage()} sur ${pages}</span>${tracking ? '<span style="background:#fff;color:#2b579a;border-radius:3px;padding:0 6px">Suivi des modifications : activé</span>' : ""}<span>${words} mot${words > 1 ? "s" : ""}</span><span>${esc(langName(S.lang))} (${esc(regionName(S.region))})</span><span class="sp"></span><button data-z="-">${svg("minus", 12)}</button><input type="range" min="50" max="200" value="${zoom}"><button data-z="+">${svg("plus", 12)}</button><span>${zoom} %</span>`; },
     afterStatus: (st) => { $("input", st).oninput = (e) => setZoom(+e.target.value); $$("[data-z]", st).forEach(b => b.onclick = () => setZoom(zoom + (b.dataset.z === "+" ? 10 : -10))); },
     sync: syncRibbon,
-    printArgs: () => ["Document", page.innerHTML, ".wm{display:none} h1{color:#1f3864;font-weight:300} table{border-collapse:collapse} td{border:1px solid #8eaadb;padding:4px}"],
-    exportFile: () => [api.doc.name.replace(/\.[^.]+$/, "") + ".html", "text/html", `<!doctype html><meta charset="utf-8"><body style="font-family:Calibri,Arial">${page.innerHTML}</body>`]
+    printArgs: () => ["Document", cleanHTML(), ".wm{display:none} h1{color:#1f3864;font-weight:300} table{border-collapse:collapse} td{border:1px solid #8eaadb;padding:4px}"],
+    exportFile: () => [api.doc.name.replace(/\.[^.]+$/, "") + ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Docx.fromHTML(cleanHTML(), { landscape: page.classList.contains("land"), title: api.doc.name })]
   });
-  api.content.innerHTML = `<div class="wscroll"><div class="wruler hidden"></div><div class="wpage" contenteditable="true" spellcheck="true"></div></div>`;
+  api.content.innerHTML = `<div class="wscroll"><div class="wruler hidden"></div><div class="wpage" contenteditable="true" spellcheck="true"></div></div><div class="wcmts hidden"></div>`;
   page = $(".wpage", api.content);
   document.execCommand("defaultParagraphSeparator", false, "p");
   page.innerHTML = "<p><br></p>";
 
-  function load(c) { page.innerHTML = c && c.trim() ? (c.includes("<") ? c : c.split("\n").map(l => `<p>${esc(l) || "<br>"}</p>`).join("")) : "<p><br></p>"; api.status(); }
+  /* ---------- vraies pages : chaque bloc qui déborde passe à la page suivante ---------- */
+  const PAGE = () => page.classList.contains("land") ? 794 : page.classList.contains("letter") ? 1056 : 1123, GAP = 28;
+  const pad = () => parseFloat(getComputedStyle(page).paddingTop) || 96;
+  function cleanHTML() { const c = page.cloneNode(true); $$("[data-push]", c).forEach(e => { e.style.marginTop = e.dataset.push0 || ""; e.removeAttribute("data-push"); e.removeAttribute("data-push0"); if (!e.getAttribute("style")) e.removeAttribute("style"); }); return c.innerHTML; }
+  function paginate() {
+    const P = PAGE(), period = P + GAP, top = pad(), bottom = pad();
+    page.style.backgroundImage = `repeating-linear-gradient(to bottom, transparent 0 ${P}px, var(--wgap,#e6e6e6) ${P}px ${period}px)`;
+    $$("[data-push]", page).forEach(e => { e.style.marginTop = e.dataset.push0 || ""; e.removeAttribute("data-push"); });
+    for (const b of [...page.children]) {
+      if (b.matches(".wm,.whf")) continue;
+      const y0 = b.offsetTop, y1 = y0 + b.offsetHeight, n = Math.floor(y0 / period), end = n * period + P - bottom;
+      if (y1 > end && b.offsetHeight < P - top - bottom) {
+        const target = (n + 1) * period + top, cur = parseFloat(getComputedStyle(b).marginTop) || 0;
+        b.dataset.push0 = b.style.marginTop || ""; b.dataset.push = "1"; b.style.marginTop = cur + (target - y0) + "px";
+      }
+    }
+    const pages = Math.max(1, Math.ceil((page.scrollHeight - 1) / period));
+    page.style.minHeight = pages * period - GAP + "px";
+  }
+  const paginateSoon = debounce(() => { paginate(); api.status(); }, 250);
+  const pageCount = () => Math.max(1, Math.round((page.offsetHeight + GAP) / (PAGE() + GAP)));
+  const curPage = () => { const s = getSelection(); if (!s.rangeCount || !page.contains(s.anchorNode)) return 1; const r = s.getRangeAt(0).getBoundingClientRect(), p = page.getBoundingClientRect(); return Math.min(pageCount(), Math.floor(((r.top - p.top) / (zoom / 100)) / (PAGE() + GAP)) + 1); };
+
+  /* ---------- suivi des modifications ---------- */
+  let tracking = false, showMarks = true;
+  const stamp = () => `Lucien · ${new Date().toLocaleString(locale(), { dateStyle: "short", timeStyle: "short" })}`;
+  page.addEventListener("beforeinput", (e) => {
+    if (!tracking) return;
+    const s = getSelection(); if (!s.rangeCount) return;
+    const inOwnIns = (n) => (n.nodeType === 3 ? n.parentElement : n)?.closest("ins.trk");
+    if (e.inputType === "insertText" || e.inputType === "insertFromPaste") {
+      const txt = e.data ?? e.dataTransfer?.getData("text/plain") ?? ""; if (!txt) return;
+      if (!s.isCollapsed) markDeleted(s.getRangeAt(0));
+      if (inOwnIns(s.anchorNode)) { if (e.inputType === "insertFromPaste") { e.preventDefault(); document.execCommand("insertText", false, txt); } return; }
+      e.preventDefault();
+      const ins = document.createElement("ins"); ins.className = "trk"; ins.title = "Insertion · " + stamp(); ins.textContent = txt;
+      const r = s.getRangeAt(0); r.insertNode(ins); r.setStart(ins.firstChild, txt.length); r.collapse(true); s.removeAllRanges(); s.addRange(r);
+      api.dirty(); return;
+    }
+    if (e.inputType === "deleteContentBackward" || e.inputType === "deleteContentForward" || e.inputType === "deleteByCut") {
+      if (s.isCollapsed) { if (inOwnIns(s.anchorNode)) return; s.modify("extend", e.inputType === "deleteContentForward" ? "forward" : "backward", "character"); }
+      if (s.isCollapsed) return;
+      e.preventDefault(); const back = e.inputType === "deleteContentBackward";
+      const del = markDeleted(s.getRangeAt(0));
+      if (del) { const r = document.createRange(); back ? r.setStartBefore(del) : r.setStartAfter(del); r.collapse(true); s.removeAllRanges(); s.addRange(r); }
+      api.dirty();
+    }
+  });
+  function markDeleted(range) {
+    const anc = range.commonAncestorContainer; const own = (anc.nodeType === 3 ? anc.parentElement : anc).closest("ins.trk");
+    if (own) { range.deleteContents(); return null; }
+    if ((anc.nodeType === 3 ? anc.parentElement : anc).closest("del.trk")) return (anc.nodeType === 3 ? anc.parentElement : anc).closest("del.trk");
+    const frag = range.extractContents(); const del = document.createElement("del"); del.className = "trk"; del.title = "Suppression · " + stamp(); del.contentEditable = "false"; del.append(frag); range.insertNode(del); return del;
+  }
+  function resolveTracks(accept, only) {
+    const list = only ? [only] : $$("ins.trk,del.trk", page);
+    list.forEach(n => { const keep = (n.tagName === "INS") === accept; if (keep) n.replaceWith(...n.childNodes); else n.remove(); });
+    api.dirty(); paginateSoon(); drawCmts();
+  }
+  page.addEventListener("click", (e) => {
+    const m = e.target.closest("ins.trk,del.trk");
+    if (m) { const r = m.getBoundingClientRect(); ctxMenu({ preventDefault() {}, stopPropagation() {}, clientX: r.left, clientY: r.bottom + 4 }, [[(m.tagName === "INS" ? "Insertion" : "Suppression") + " de Lucien", null, { dis: true }], "-", ["Accepter", () => resolveTracks(true, m), { ic: "check" }], ["Refuser", () => resolveTracks(false, m), { ic: "x" }]]); }
+    const c = e.target.closest("mark.cmt"); if (c) { openCmts(); const card = $(`.wcmt[data-id="${c.dataset.id}"]`, api.content); card && card.animate([{ transform: "scale(1.04)" }, { transform: "none" }], { duration: 300 }); }
+  });
+
+  /* ---------- volet des commentaires ---------- */
+  const pane = $(".wcmts", api.content);
+  const openCmts = () => { pane.classList.remove("hidden"); drawCmts(); };
+  function drawCmts() {
+    if (pane.classList.contains("hidden")) return;
+    const ms = $$("mark.cmt", page);
+    pane.innerHTML = `<b style="padding:0 4px">Commentaires (${ms.length})</b>` + (ms.map(m => {
+      m.dataset.id ||= "c" + Math.random().toString(36).slice(2, 8);
+      const replies = JSON.parse(m.dataset.rep || "[]");
+      return `<div class="wcmt" data-id="${m.dataset.id}" style="${m.dataset.done ? "opacity:.55" : ""}"><b>Lucien</b><q>${esc(m.textContent.slice(0, 60))}</q>${esc(m.dataset.cmt || (m.title || "").replace(/^Lucien : /, ""))}${replies.map(r => `<div style="border-top:1px solid #eee;margin-top:6px;padding-top:6px"><b>Lucien</b>${esc(r)}</div>`).join("")}<div class="acts"><button class="btn ghost" data-r style="padding:2px 8px">Répondre</button><button class="btn ghost" data-d style="padding:2px 8px">${m.dataset.done ? "Rouvrir" : "Résoudre"}</button><button class="btn ghost" data-x style="padding:2px 8px">Supprimer</button></div></div>`;
+    }).join("") || '<p class="muted" style="padding:0 4px">Aucun commentaire. Sélectionne du texte puis Révision › Nouveau commentaire.</p>');
+    $$(".wcmt", pane).forEach(card => {
+      const m = $(`mark.cmt[data-id="${card.dataset.id}"]`, page);
+      card.onclick = (e) => { if (e.target.closest("button")) return; m.scrollIntoView({ behavior: "smooth", block: "center" }); m.animate([{ background: "#f4b400" }, { background: "#fff2cc" }], { duration: 800 }); };
+      $("[data-r]", card).onclick = async () => { const r = await dialog(w, "Répondre", [{ k: "t", l: "Réponse" }], "Publier"); if (r && r.t) { const rep2 = JSON.parse(m.dataset.rep || "[]"); rep2.push(r.t); m.dataset.rep = JSON.stringify(rep2); api.dirty(); drawCmts(); } };
+      $("[data-d]", card).onclick = () => { if (m.dataset.done) delete m.dataset.done; else m.dataset.done = "1"; api.dirty(); drawCmts(); };
+      $("[data-x]", card).onclick = () => { m.replaceWith(...m.childNodes); api.dirty(); drawCmts(); };
+    });
+  }
+
+  /* ---------- dictée vocale ---------- */
+  let rec = null;
+  function dictate() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return notify("texte", "Dicter", "La dictée n'est pas disponible dans ce navigateur (essayez Chrome ou Edge).");
+    if (rec) { rec.stop(); return; }
+    rec = new SR(); rec.lang = locale(); rec.continuous = true; rec.interimResults = false;
+    rec.onresult = (e) => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) { restore(); document.execCommand("insertText", false, e.results[i][0].transcript.trim() + " "); api.dirty(); } };
+    rec.onend = () => { rec = null; $('[data-c="dictate"]', api.root)?.classList.remove("on"); };
+    rec.onerror = (e) => notify("texte", "Dicter", e.error === "not-allowed" ? "Autorisez le micro pour dicter." : "Dictée interrompue.");
+    rec.start(); $('[data-c="dictate"]', api.root)?.classList.add("on"); notify("texte", "Dicter", "Parlez, le texte s'écrit tout seul. Cliquez à nouveau sur Dicter pour arrêter.");
+  }
+  function load(c) { page.innerHTML = c && c.trim() ? (c.includes("<") ? c : c.split("\n").map(l => `<p>${esc(l) || "<br>"}</p>`).join("")) : "<p><br></p>"; setTimeout(() => { paginate(); api.status(); drawCmts(); }, 30); }
   const onSel = () => { const s = getSelection(); if (s.rangeCount && page.contains(s.anchorNode)) { savedRange = s.getRangeAt(0).cloneRange(); syncRibbon(); } };
   document.addEventListener("selectionchange", onSel);
   w._cleanup = () => document.removeEventListener("selectionchange", onSel);
-  page.addEventListener("input", () => api.dirty());
+  page.addEventListener("input", () => { api.dirty(); paginateSoon(); drawCmtsSoon(); });
+  const drawCmtsSoon = debounce(() => drawCmts(), 400);
+  w._cleanup = ((old) => () => { old && old(); rec && rec.stop(); })(w._cleanup);
   function restore() { page.focus(); if (savedRange) { const s = getSelection(); s.removeAllRanges(); s.addRange(savedRange); } }
   const exec = (c, v = null) => { restore(); document.execCommand("styleWithCSS", false, true); document.execCommand(c, false, v); api.dirty(); syncRibbon(); };
   const insertHTML = (html) => exec("insertHTML", html);
@@ -88,6 +189,7 @@ function TexteApp(body, w, arg) {
   function syncRibbon() {
     const rib = $(".oribbon", api.root); if (!rib) return;
     ["bold", "italic", "underline", "strikeThrough", "subscript", "superscript", "insertUnorderedList", "insertOrderedList", "justifyLeft", "justifyCenter", "justifyRight", "justifyFull"].forEach(c => { const b = $(`button[data-c="${c}"]`, rib); if (b) { try { b.classList.toggle("on", document.queryCommandState(c)); } catch {} } });
+    $('button[data-c="track"]', rib)?.classList.toggle("on", tracking);
     const fs = $('select[data-c="fontSize"]', rib); if (fs && document.activeElement !== fs) { const v = String(curSize()); if (![...fs.options].some(o => o.value === v)) fs.add(new Option(v)); fs.value = v; }
     const fn = $('select[data-c="fontName"]', rib); if (fn && document.activeElement !== fn) { try { const f = (document.queryCommandValue("fontName") || "Calibri").split(",")[0].replace(/["']/g, "").trim(); if (![...fn.options].some(o => o.value === f)) fn.add(new Option(f)); fn.value = f; } catch {} }
   }
@@ -128,7 +230,13 @@ function TexteApp(body, w, arg) {
       case "shape": { const r = await dialog(w, "Formes", [{ k: "s", l: "Forme", type: "select", o: ["Rectangle", "Ellipse", "Triangle", "Flèche", "Étoile"], v: "Rectangle" }], "Insérer"); if (!r) return; const p = { Rectangle: '<rect x="4" y="4" width="112" height="72" rx="4"/>', Ellipse: '<ellipse cx="60" cy="40" rx="56" ry="36"/>', Triangle: '<path d="M60 4l56 72H4z"/>', "Flèche": '<path d="M4 28h72V8l40 32-40 32V52H4z"/>', "Étoile": '<path d="M60 4l11 24 26 3-19 18 5 26-23-13-23 13 5-26-19-18 26-3z"/>' }[r.s]; return insertHTML(`<svg width="120" height="80" viewBox="0 0 120 80" style="vertical-align:middle"><g fill="#4472c4" stroke="#2f528f" stroke-width="2">${p}</g></svg>&nbsp;`); }
       case "chart": return insertHTML(`<svg width="360" height="200" viewBox="0 0 360 200" style="display:block;margin:6pt 0"><line x1="30" y1="180" x2="350" y2="180" stroke="#999"/>${[60, 110, 80, 150].map((v, i) => `<rect x="${50 + i * 75}" y="${180 - v}" width="45" height="${v}" fill="${["#4472c4", "#ed7d31", "#a5a5a5", "#ffc000"][i]}"/><text x="${72 + i * 75}" y="195" font-size="11" text-anchor="middle">T${i + 1}</text>`).join("")}</svg><p><br></p>`);
       case "link": { restore(); const sel = getSelection().toString(); const r = await dialog(w, "Insérer un lien", [{ k: "t", l: "Texte à afficher", v: sel }, { k: "u", l: "Adresse", v: "https://" }], "OK"); if (!r) return; if (sel) exec("createLink", r.u); else insertHTML(`<a href="${esc(r.u)}">${esc(r.t || r.u)}</a>`); return; }
-      case "comment": { restore(); const sel = getSelection().toString(); if (!sel) return notify("texte", "Commentaire", "Sélectionne d'abord du texte."); const r = await dialog(w, "Nouveau commentaire", [{ k: "t", l: "Commentaire de Lucien" }], "Publier"); if (!r) return; return insertHTML(`<mark class="cmt" title="Lucien : ${esc(r.t)}">${esc(sel)}</mark>`); }
+      case "comment": { restore(); const sel = getSelection().toString(); if (!sel) return notify("texte", "Commentaire", "Sélectionne d'abord du texte."); const r = await dialog(w, "Nouveau commentaire", [{ k: "t", l: "Commentaire de Lucien" }], "Publier"); if (!r) return; insertHTML(`<mark class="cmt" data-cmt="${esc(r.t)}" data-id="c${Date.now().toString(36)}" title="Lucien : ${esc(r.t)}">${esc(sel)}</mark>`); return openCmts(); }
+      case "cmtpane": pane.classList.toggle("hidden"); return drawCmts();
+      case "track": tracking = !tracking; $('[data-c="track"]', api.root)?.classList.toggle("on", tracking); api.status(); return notify("texte", "Suivi des modifications", tracking ? "Activé : les ajouts sont soulignés en vert, les suppressions barrées en rouge." : "Désactivé.");
+      case "acceptall": return resolveTracks(true);
+      case "rejectall": return resolveTracks(false);
+      case "showmarks": showMarks = !showMarks; page.classList.toggle("nomarks", !showMarks); return;
+      case "dictate": return dictate();
       case "delcomments": $$("mark.cmt", page).forEach(m => m.replaceWith(...m.childNodes)); api.dirty(); return;
       case "header": case "footer": case "showhf": {
         if (!$(".whf", page)) { page.insertAdjacentHTML("afterbegin", `<div class="whf" data-ph="En-tête">En-tête</div>`); page.insertAdjacentHTML("beforeend", `<div class="whf ft">Pied de page</div>`); }
@@ -151,7 +259,7 @@ function TexteApp(body, w, arg) {
       case "watermark": { const r = await dialog(w, "Filigrane", [{ k: "t", l: "Texte (vide pour retirer)", v: "CONFIDENTIEL" }], "OK"); if (!r) return; $(".wm", page)?.remove(); if (r.t) page.insertAdjacentHTML("afterbegin", `<div class="wm" contenteditable="false">${esc(r.t)}</div>`); api.dirty(); return; }
       case "pageborder": page.style.outline = page.style.outline ? "" : "3px double #2b579a"; page.style.outlineOffset = "-40px"; return;
       case "margins": { const r = await dialog(w, "Marges", [{ k: "m", l: "Marges", type: "select", o: ["Normales (2,54 cm)", "Étroites (1,27 cm)", "Larges (3,81 cm)"] }], "OK"); if (!r) return; page.classList.remove("narrow", "wide"); if (r.m.startsWith("Étroites")) page.classList.add("narrow"); if (r.m.startsWith("Larges")) page.classList.add("wide"); return; }
-      case "orient": page.classList.toggle("land"); api.status(); return;
+      case "orient": page.classList.toggle("land"); setTimeout(paginateSoon, 350); return;
       case "psize": { const r = await dialog(w, "Taille", [{ k: "s", l: "Format", type: "select", o: ["A4 (21 × 29,7 cm)", "Lettre US (21,6 × 27,9 cm)"] }], "OK"); if (r) page.classList.toggle("letter", r.s.startsWith("Lettre")); return; }
       case "columns": { const r = await dialog(w, "Colonnes", [{ k: "n", l: "Nombre de colonnes", type: "select", o: ["1", "2", "3"] }], "OK"); if (r) { page.style.columnCount = r.n; page.style.columnGap = "1.25cm"; } return; }
       case "toc": {
@@ -173,8 +281,10 @@ function TexteApp(body, w, arg) {
       case "zoomout": return setZoom(zoom - 10);
       case "zoom100": return setZoom(100);
       case "full": return toggleMax(w);
+      case "orient2": return;
     }
   }
   if (arg && arg.path) api.open(arg.path);
-  setTimeout(() => page.focus(), 100);
+  new ResizeObserver(paginateSoon).observe(page);
+  setTimeout(() => { paginate(); page.focus(); }, 100);
 }

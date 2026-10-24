@@ -4,6 +4,18 @@ const XCOLS = 26, XROWS = 100;
 const colName = (c) => String.fromCharCode(65 + c);
 const cellKey = (r, c) => colName(c) + (r + 1);
 const parseKey = (k) => { const m = /^([A-Z])(\d+)$/.exec(k); return m ? [+m[2] - 1, m[1].charCodeAt(0) - 65] : null; };
+function rangeRows(a, b) {
+  const [r0, c0] = parseKey(a), [r1, c1] = parseKey(b), out = [];
+  for (let r = Math.min(r0, r1); r <= Math.max(r0, r1); r++) { const row = []; for (let c = Math.min(c0, c1); c <= Math.max(c0, c1); c++) row.push(cellKey(r, c)); out.push(row); }
+  return out;
+}
+/* décale les références relatives d'une formule (recopie) ; les références avec $ restent fixes */
+function shiftFormula(src, dr, dc) {
+  return String(src).split(/("[^"]*")/).map((part, i) => i % 2 ? part : part.replace(/(?<![A-Za-z])(\$?)([A-Z])(\$?)(\d+)(?![\d(])/g, (m, d1, col, d2, row) => {
+    const c = d1 ? col : String.fromCharCode(Math.max(65, Math.min(90, col.charCodeAt(0) + dc))), r = d2 ? row : Math.max(1, +row + dr);
+    return d1 + c + d2 + r;
+  })).join("");
+}
 function rangeKeys(a, b) {
   const [r0, c0] = parseKey(a), [r1, c1] = parseKey(b), out = [];
   for (let r = Math.min(r0, r1); r <= Math.max(r0, r1); r++) for (let c = Math.min(c0, c1); c <= Math.max(c0, c1); c++) out.push(cellKey(r, c));
@@ -30,9 +42,41 @@ const XFN = (() => {
     AUJOURDHUI: () => Math.floor(serial(new Date())), MAINTENANT: () => serial(new Date())
   };
   Object.assign(F, { SUM: F.SOMME, AVERAGE: F.MOYENNE, COUNT: F.NB, COUNTA: F.NBVAL, IF: F.SI, AND: F.ET, OR: F.OU, NOT: F.NON, ROUND: F.ARRONDI, INT: F.ENT, SQRT: F.RACINE, POWER: F.PUISSANCE, RAND: F.ALEA, PRODUCT: F.PRODUIT, COUNTIF: F["NB.SI"], SUMIF: F["SOMME.SI"], CONCATENER: F.CONCAT, UPPER: F.MAJUSCULE, LOWER: F.MINUSCULE, LEN: F.NBCAR, LEFT: F.GAUCHE, RIGHT: F.DROITE, TODAY: F.AUJOURDHUI, NOW: F.MAINTENANT });
+  const rows2 = (r) => Array.isArray(r) && Array.isArray(r[0]) ? r : [flat([r])];
+  const toDate = (s) => typeof s === "number" ? new Date(new Date(1899, 11, 30).getTime() + s * 864e5) : (() => { const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(String(s)); return m ? new Date(+m[3] < 100 ? 2000 + +m[3] : +m[3], m[2] - 1, m[1]) : new Date(s); })();
+  const same = (a, b) => a == b || (typeof a === "string" && typeof b === "string" && a.toLowerCase() === b.toLowerCase());
+  const keepIf = (pairs, n) => { const ok = Array(n).fill(true); for (let i = 0; i < pairs.length; i += 2) { const R = flat([pairs[i]]), f = crit(pairs[i + 1]); R.forEach((x, j) => { if (!f(x)) ok[j] = false; }); } return ok; };
+  Object.assign(F, {
+    RECHERCHEV: (v, tb, col, approx = false) => { const T = rows2(tb); const row = approx ? [...T].reverse().find(r => r[0] <= v) : T.find(r => same(r[0], v)); if (!row) throw "#N/A"; return row[col - 1] ?? ""; },
+    RECHERCHEH: (v, tb, row) => { const T = rows2(tb); const i = T[0].findIndex(x => same(x, v)); if (i < 0) throw "#N/A"; return (T[row - 1] || [])[i] ?? ""; },
+    RECHERCHEX: (v, a, b, def) => { const A = flat([a]), B = flat([b]); const i = A.findIndex(x => same(x, v)); if (i < 0) { if (def !== undefined) return def; throw "#N/A"; } return B[i]; },
+    INDEX: (tb, r, c = 1) => { const T = rows2(tb); return T.length === 1 ? T[0][r - 1] ?? "" : (T[r - 1] || [])[c - 1] ?? ""; },
+    EQUIV: (v, a) => { const i = flat([a]).findIndex(x => same(x, v)); if (i < 0) throw "#N/A"; return i + 1; },
+    "NB.SI.ENS": (...a) => keepIf(a, flat([a[0]]).length).filter(Boolean).length,
+    "SOMME.SI.ENS": (s, ...a) => { const S2 = flat([s]), ok = keepIf(a, S2.length); return S2.reduce((x, v, j) => x + (ok[j] && typeof v === "number" ? v : 0), 0); },
+    "MOYENNE.SI": (r, c, s) => { const R = flat([r]), S2 = s ? flat([s]) : R, f = crit(c); const v = R.map((x, i) => f(x) ? S2[i] : null).filter(x => typeof x === "number"); if (!v.length) throw "#DIV/0!"; return v.reduce((a, b) => a + b, 0) / v.length; },
+    SIERREUR: (fn, alt = "") => { try { const v = typeof fn === "function" ? fn() : fn; return typeof v === "number" && !isFinite(v) ? alt : v; } catch { return alt; } },
+    "SI.CONDITIONS": (...a) => { for (let i = 0; i < a.length; i += 2) if (a[i]) return a[i + 1]; throw "#N/A"; },
+    MEDIANE: (...a) => { const v = nums(a).sort((x, y) => x - y), n = v.length; if (!n) throw "#NOMBRE!"; return n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2; },
+    VAR: (...a) => { const v = nums(a), m = v.reduce((s, x) => s + x, 0) / v.length; return v.reduce((s, x) => s + (x - m) ** 2, 0) / (v.length - 1); },
+    ECARTYPE: (...a) => Math.sqrt(F.VAR(...a)),
+    RANG: (x, r, asc = 0) => { const v = nums([r]).sort((a, b) => asc ? a - b : b - a), i = v.indexOf(x); if (i < 0) throw "#N/A"; return i + 1; },
+    "GRANDE.VALEUR": (r, k) => nums([r]).sort((a, b) => b - a)[k - 1], "PETITE.VALEUR": (r, k) => nums([r]).sort((a, b) => a - b)[k - 1],
+    SOMMEPROD: (...a) => { const A = a.map(x => flat([x])); return A[0].reduce((s, _, i) => s + A.reduce((p, arr) => p * (+arr[i] || 0), 1), 0); },
+    "ARRONDI.SUP": (x, n = 0) => Math.ceil(x * 10 ** n) / 10 ** n, "ARRONDI.INF": (x, n = 0) => Math.floor(x * 10 ** n) / 10 ** n,
+    SUPPRESPACE: (s) => String(s).trim().replace(/\s+/g, " "), STXT: (s, d, n) => String(s).substr(d - 1, n), SUBSTITUE: (s, a, b) => String(s).split(a).join(b), REPT: (s, n) => String(s).repeat(n),
+    CHERCHE: (a, s) => { const i = String(s).toLowerCase().indexOf(String(a).toLowerCase()); if (i < 0) throw "#VALEUR!"; return i + 1; },
+    TEXTE: (v, fm) => { if (typeof v !== "number") return String(v); const d = (String(fm).split(/[.,]/)[1] || "").replace(/[^0#]/g, "").length; return String(fm).includes("%") ? (v * 100).toFixed(d).replace(".", ",") + " %" : v.toFixed(d).replace(".", ","); },
+    DATE: (y, m, d) => (new Date(y, m - 1, d) - new Date(1899, 11, 30)) / 864e5,
+    ANNEE: (s) => toDate(s).getFullYear(), MOIS: (s) => toDate(s).getMonth() + 1, JOUR: (s) => toDate(s).getDate(), JOURSEM: (s) => toDate(s).getDay() + 1,
+    VPM: (r, n, va, vc = 0) => r ? -(va * (1 + r) ** n + vc) * r / ((1 + r) ** n - 1) : -(va + vc) / n,
+    ESTNUM: (v) => typeof v === "number", ESTTEXTE: (v) => typeof v === "string" && v !== "",
+    LN: Math.log, LOG: (x, b = 10) => Math.log(x) / Math.log(b), EXP: Math.exp, PI: () => Math.PI
+  });
+  Object.assign(F, { VLOOKUP: F.RECHERCHEV, HLOOKUP: F.RECHERCHEH, XLOOKUP: F.RECHERCHEX, MATCH: F.EQUIV, COUNTIFS: F["NB.SI.ENS"], SUMIFS: F["SOMME.SI.ENS"], AVERAGEIF: F["MOYENNE.SI"], IFERROR: F.SIERREUR, IFS: F["SI.CONDITIONS"], MEDIAN: F.MEDIANE, STDEV: F.ECARTYPE, RANK: F.RANG, LARGE: F["GRANDE.VALEUR"], SMALL: F["PETITE.VALEUR"], SUMPRODUCT: F.SOMMEPROD, ROUNDUP: F["ARRONDI.SUP"], ROUNDDOWN: F["ARRONDI.INF"], TRIM: F.SUPPRESPACE, MID: F.STXT, SUBSTITUTE: F.SUBSTITUE, SEARCH: F.CHERCHE, TEXT: F.TEXTE, YEAR: F.ANNEE, MONTH: F.MOIS, DAY: F.JOUR, WEEKDAY: F.JOURSEM, PMT: F.VPM, ISNUMBER: F.ESTNUM, ISTEXT: F.ESTTEXTE, REPT: F.REPT });
   return F;
 })();
-const XFN_HELP = [["SOMME", "Additionne des nombres"], ["MOYENNE", "Moyenne arithmétique"], ["MIN", "Plus petite valeur"], ["MAX", "Plus grande valeur"], ["NB", "Compte les nombres"], ["NBVAL", "Compte les cellules non vides"], ["SI", "SI(test; si_vrai; si_faux)"], ["NB.SI", "NB.SI(plage; critère)"], ["SOMME.SI", "SOMME.SI(plage; critère; [somme])"], ["ARRONDI", "ARRONDI(nombre; décimales)"], ["CONCAT", "Assemble du texte"], ["AUJOURDHUI", "Date du jour"], ["RACINE", "Racine carrée"], ["PRODUIT", "Multiplie des nombres"]];
+const XFN_HELP = [["RECHERCHEV", "RECHERCHEV(valeur; tableau; colonne; [approx])"], ["RECHERCHEX", "RECHERCHEX(valeur; plage; plage_résultat; [si_absent])"], ["INDEX", "INDEX(tableau; ligne; [colonne])"], ["EQUIV", "Position d'une valeur dans une plage"], ["SIERREUR", "SIERREUR(calcul; valeur_si_erreur)"], ["SI.CONDITIONS", "SI.CONDITIONS(test1; v1; test2; v2…)"], ["NB.SI.ENS", "Compte avec plusieurs critères"], ["SOMME.SI.ENS", "Somme avec plusieurs critères"], ["MOYENNE.SI", "Moyenne si critère"], ["MEDIANE", "Valeur du milieu"], ["ECARTYPE", "Écart-type (échantillon)"], ["RANG", "Classement d'une valeur"], ["SOMMEPROD", "Somme des produits"], ["TEXTE", "Met un nombre en forme"], ["DATE", "DATE(année; mois; jour)"], ["VPM", "Mensualité d'un prêt"], ["SOMME", "Additionne des nombres"], ["MOYENNE", "Moyenne arithmétique"], ["MIN", "Plus petite valeur"], ["MAX", "Plus grande valeur"], ["NB", "Compte les nombres"], ["NBVAL", "Compte les cellules non vides"], ["SI", "SI(test; si_vrai; si_faux)"], ["NB.SI", "NB.SI(plage; critère)"], ["SOMME.SI", "SOMME.SI(plage; critère; [somme])"], ["ARRONDI", "ARRONDI(nombre; décimales)"], ["CONCAT", "Assemble du texte"], ["AUJOURDHUI", "Date du jour"], ["RACINE", "Racine carrée"], ["PRODUIT", "Multiplie des nombres"]];
 const formulaCache = {};
 function compileFormula(src) {
   if (formulaCache[src]) return formulaCache[src];
@@ -41,8 +85,18 @@ function compileFormula(src) {
   s = s.replace(/\$?([A-Z])\$?(\d+):\$?([A-Z])\$?(\d+)/g, 'R("$1$2","$3$4")');
   s = s.replace(/(^|[^A-Z"\w])\$?([A-Z])\$?(\d+)(?![\d(])/g, '$1V("$2$3")');
   s = s.replace(/([A-Z][A-Z0-9.]*)\s*\(/g, (m, n) => { if (n === "R" || n === "V") return m; if (!(n in XFN)) throw "#NOM?"; return `F["${n}"](`; });
+  for (const lazy of ['F["SIERREUR"](', 'F["IFERROR"](']) {
+    let at = s.indexOf(lazy);
+    while (at >= 0) {
+      const start = at + lazy.length; let d = 0, j = start;
+      for (; j < s.length; j++) { const ch = s[j]; if (ch === "(") d++; else if (ch === ")") { if (d === 0) break; d--; } else if (ch === "," && d === 0) break; }
+      s = s.slice(0, start) + "()\u0002(" + s.slice(start, j) + ")" + s.slice(j);
+      at = s.indexOf(lazy, start + 5);
+    }
+  }
   s = s.replace(/\b(VRAI|TRUE)\b/g, "true").replace(/\b(FAUX|FALSE)\b/g, "false");
   s = s.replace(/(\d+(?:\.\d+)?)%/g, "($1/100)").replace(/<>/g, "!=").replace(/([^<>!=])=(?!=)/g, "$1==").replace(/\^/g, "**").replace(/&/g, '+""+');
+  s = s.replace(/\u0002/g, "=>");
   s = s.replace(/\u0001(\d+)\u0001/g, (m, i) => strs[i]);
   const check = s.replace(/"[^"]*"/g, '""');
   if (/[^\w\s+\-*/().,"<>=!%[\]]/.test(check) || (check.match(/[A-Za-z_]\w*/g) || []).some(id => !["R", "V", "F", "true", "false"].includes(id))) throw "#VALEUR!";
@@ -61,7 +115,7 @@ function TableurApp(body, w, arg) {
       ["Police", [[["sel", "ff", FONTS, 110, "Police"], ["sel", "fs", SIZES.map(String), 50, "Taille"]], [["let", "<b>G</b>", "b", "Gras"], ["let", "<i>I</i>", "i", "Italique"], ["let", "<u>S</u>", "u", "Souligné"], ["btn", "border", null, "bd", "Bordures"], ["color", "fill", "bg", "#ffff00", "Couleur de remplissage"], ["color", "fcolor", "fg", "#c00000", "Couleur de police"]]]],
       ["Alignement", [[["btn", "alignL", null, "al-left", "Aligner à gauche"], ["btn", "alignC", null, "al-center", "Centrer"], ["btn", "alignR", null, "al-right", "Aligner à droite"]], [["btn", "wrap", "Renvoyer à la ligne", "wr"]], [["btn", "merge", "Fusionner et centrer", "merge"]]]],
       ["Nombre", [[["sel", "fmt", [["gen", "Standard"], ["num", "Nombre"], ["cur", "Monétaire"], ["acc", "Comptabilité"], ["pct", "Pourcentage"], ["date", "Date courte"], ["time", "Heure"], ["sci", "Scientifique"], ["txt", "Texte"]], 110, "Format de nombre"]], [["btn", "plus", ",0", "decp", "Ajouter une décimale"], ["btn", "minus", ",00", "decm", "Réduire les décimales"], ["let", "%", "pctq", "Style de pourcentage"]]]],
-      ["Styles", ["gal", "cstyle", [["table", "Tableau", "background:#d9e1f2", "Mettre sous forme"], ["bon", "Bon", "background:#c6efce;color:#006100"], ["neutre", "Neutre", "background:#ffeb9c;color:#9c5700"], ["mauvais", "Mauvais", "background:#ffc7ce;color:#9c0006"], ["titre", "<b>Titre</b>", "font-size:14px"], ["total", "<b>Total</b>", "border-top:2px solid #4472c4"]]]],
+      ["Styles", ["big", "palette", "Mise en forme conditionnelle", "cf"], ["gal", "cstyle", [["table", "Tableau", "background:#d9e1f2", "Mettre sous forme"], ["bon", "Bon", "background:#c6efce;color:#006100"], ["neutre", "Neutre", "background:#ffeb9c;color:#9c5700"], ["mauvais", "Mauvais", "background:#ffc7ce;color:#9c0006"], ["titre", "<b>Titre</b>", "font-size:14px"], ["total", "<b>Total</b>", "border-top:2px solid #4472c4"]]]],
       ["Cellules", [[["btn", "rowins", "Insérer ligne", "insrow"]], [["btn", "colins", "Insérer colonne", "inscol"]], [["btn", "rowdel", "Supprimer ligne", "delrow"]]]],
       ["Édition", [[["btn", "sum", "Somme auto", "autosum"]], [["btn", "sortaz", "Trier", "sortaz"]], [["btn", "x", "Effacer", "clear"]]]]
     ],
@@ -79,7 +133,7 @@ function TableurApp(body, w, arg) {
       ["Calcul", ["big", "restart", "Calculer maintenant", "recalc"], ["big", "eye", "Afficher les formules", "showf"]]
     ],
     "Données": [
-      ["Trier et filtrer", ["big", "sortaz", "Trier A → Z", "sortaz"], ["big", "sortza", "Trier Z → A", "sortza"], ["big", "filter", "Filtrer", "filter"]],
+      ["Trier et filtrer", ["big", "sortaz", "Trier A → Z", "sortaz"], ["big", "sortza", "Trier Z → A", "sortza"], ["big", "filter", "Filtrer", "filter"], ["big", "palette", "Mise en forme conditionnelle", "cf"]],
       ["Outils de données", ["big", "x", "Supprimer les doublons", "dedup"], ["big", "columns", "Convertir", "split"]]
     ],
     "Révision": [
@@ -118,6 +172,57 @@ function TableurApp(body, w, arg) {
     <div class="xwrap" tabindex="0"><table class="xgrid"><colgroup></colgroup><thead></thead><tbody></tbody></table><div class="xact"></div></div><div class="xsheets"></div>`;
   const wrap = $(".xwrap", api.content), grid = $(".xgrid", wrap), tbody = $("tbody", grid), boxAct = $(".xact", wrap), nbox = $(".nbox", api.content), fin = $(".fin", api.content);
   const tds = [];
+  const fillH = h(`<div class="xfill" title="Faire glisser pour recopier ou créer une série"></div>`), fillBox = h(`<div class="xfillbox hidden"></div>`);
+  wrap.append(fillH, fillBox);
+  const LISTS = [["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"], ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"], ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"], ["janv", "févr", "mars", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"], ["T1", "T2", "T3", "T4"]];
+  function seriesNext(src, k) {
+    const raw = src.map(c => c?.v ?? ""), last = raw[raw.length - 1];
+    if (String(last)[0] === "=") return null;
+    const nums2 = raw.map(x => (/^-?\d+([.,]\d+)?$/.test(String(x).trim()) ? parseFloat(String(x).replace(",", ".")) : NaN));
+    if (nums2.every(Number.isFinite) && nums2.length >= 2) { const step = nums2[nums2.length - 1] - nums2[nums2.length - 2]; return String(+(nums2[nums2.length - 1] + step * k).toPrecision(12)).replace(".", ","); }
+    for (const L of LISTS) { const i = L.findIndex(x => x.toLowerCase() === String(last).toLowerCase()); if (i >= 0) { const w2 = L[(i + k) % L.length]; return /^[A-ZÉ]/.test(last) ? w2[0].toUpperCase() + w2.slice(1) : w2; } }
+    const m = /^(.*?)(\d+)$/.exec(String(last)); if (m && !nums2.every(Number.isFinite)) return m[1] + (+m[2] + k);
+    return undefined;
+  }
+  function doFill(dir, n) {
+    if (n <= 0) return; snap();
+    const [r0, c0, r1, c1] = sel(), vert = dir === "down" || dir === "up", fwd = dir === "down" || dir === "right";
+    const lines = vert ? Array.from({ length: c1 - c0 + 1 }, (_, i) => c0 + i) : Array.from({ length: r1 - r0 + 1 }, (_, i) => r0 + i);
+    for (const L of lines) {
+      const srcPos = vert ? Array.from({ length: r1 - r0 + 1 }, (_, i) => [r0 + i, L]) : Array.from({ length: c1 - c0 + 1 }, (_, i) => [L, c0 + i]);
+      const ordered = fwd ? srcPos : [...srcPos].reverse(), src = ordered.map(([r, c]) => cells()[cellKey(r, c)]);
+      for (let k = 1; k <= n; k++) {
+        const [er, ec] = ordered[ordered.length - 1], tr = vert ? er + (fwd ? k : -k) : er, tc = vert ? ec : ec + (fwd ? k : -k);
+        if (tr < 0 || tr >= XROWS || tc < 0 || tc >= XCOLS) break;
+        const from = ordered[(k - 1) % ordered.length], sc = cells()[cellKey(...from)];
+        const allNum = src.length >= 2 && src.every(c => c && /^-?\d+([.,]\d+)?$/.test(String(c.v).trim()));
+        const nx = allNum ? seriesNext(src, k) : sc ? seriesNext([sc], Math.floor((k - 1) / ordered.length) + 1) : undefined;
+        const v = sc && String(sc.v)[0] === "=" ? shiftFormula(sc.v, tr - from[0], tc - from[1]) : nx !== undefined && nx !== null ? nx : sc ? sc.v : "";
+        if (v === "" && !sc?.s) delete cells()[cellKey(tr, tc)]; else cells()[cellKey(tr, tc)] = { v, ...(sc && sc.s ? { s: clone(sc.s) } : {}) };
+      }
+    }
+    if (dir === "down") act = [Math.min(XROWS - 1, r1 + n), c1]; if (dir === "right") act = [r1, Math.min(XCOLS - 1, c1 + n)];
+    if (dir === "up") anchor = [Math.max(0, r0 - n), c0]; if (dir === "left") anchor = [r0, Math.max(0, c0 - n)];
+    render();
+  }
+  fillH.addEventListener("pointerdown", (e) => {
+    e.preventDefault(); e.stopPropagation(); if (editor) commit();
+    const [r0, c0, r1, c1] = sel(); let dir = null, n = 0;
+    const mv = (ev) => {
+      const td = document.elementFromPoint(ev.clientX, ev.clientY)?.closest("td"); if (!td || !wrap.contains(td)) return;
+      const r = +td.dataset.r, c = +td.dataset.c, dv = r > r1 ? r - r1 : r < r0 ? r - r0 : 0, dh = c > c1 ? c - c1 : c < c0 ? c - c0 : 0;
+      if (Math.abs(dv) >= Math.abs(dh)) { dir = dv > 0 ? "down" : dv < 0 ? "up" : null; n = Math.abs(dv); } else { dir = dh > 0 ? "right" : "left"; n = Math.abs(dh); }
+      const R0 = dir === "up" ? r0 - n : r0, R1 = dir === "down" ? r1 + n : r1, C0 = dir === "left" ? c0 - n : c0, C1 = dir === "right" ? c1 + n : c1;
+      const a = tds[Math.max(0, R0)][Math.max(0, C0)], b = tds[Math.min(XROWS - 1, R1)][Math.min(XCOLS - 1, C1)];
+      fillBox.classList.remove("hidden"); Object.assign(fillBox.style, { left: a.offsetLeft + "px", top: a.offsetTop + "px", width: b.offsetLeft + b.offsetWidth - a.offsetLeft + "px", height: b.offsetTop + b.offsetHeight - a.offsetTop + "px", zoom: zoom / 100 });
+    };
+    const up = () => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); fillBox.classList.add("hidden"); if (dir) doFill(dir, n); };
+    addEventListener("pointermove", mv); addEventListener("pointerup", up);
+  });
+  const num = (x) => { const v = lit(x ?? ""); return typeof v === "number" ? v : NaN; };
+  const hex = (c) => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  const mix = (a, b, p) => { const A = hex(a), B = hex(b); return "#" + A.map((x, i) => Math.round(x + (B[i] - x) * p).toString(16).padStart(2, "0")).join(""); };
+  const shade = (c) => { const [r, g, b2] = hex(c); return (r * .299 + g * .587 + b2 * .114) > 150 ? "#3a2a00" : "#ffffff"; };
   $("thead", grid).innerHTML = `<tr><th class="rh corner"></th>${Array.from({ length: XCOLS }, (_, c) => `<th data-c="${c}">${colName(c)}<span class="rzc"></span></th>`).join("")}</tr>`;
   for (let r = 0; r < XROWS; r++) {
     const tr = document.createElement("tr"); tr.innerHTML = `<th class="rh">${r + 1}</th>`; tds[r] = [];
@@ -137,7 +242,7 @@ function TableurApp(body, w, arg) {
       stack.add(k);
       try {
         const fn = compileFormula(String(c.v).slice(1));
-        v = fn((x) => { const y = val(x, stack); if (typeof y === "string" && y[0] === "#") throw y; return y === "" ? 0 : y; }, (a, b) => rangeKeys(a, b).map(x => val(x, stack)), XFN);
+        v = fn((x) => { const y = val(x, stack); if (typeof y === "string" && y[0] === "#") throw y; return y === "" ? 0 : y; }, (a, b) => rangeRows(a, b).map(row => row.map(x => val(x, stack))), XFN);
         if (typeof v === "number" && !isFinite(v)) v = "#DIV/0!";
         if (typeof v === "boolean") v = v ? "VRAI" : "FAUX";
         if (Array.isArray(v)) v = "#VALEUR!";
@@ -164,14 +269,36 @@ function TableurApp(body, w, arg) {
     memo = {};
     const cw = sh().cw;
     $("colgroup", grid).innerHTML = `<col style="width:42px">` + Array.from({ length: XCOLS }, (_, c) => `<col style="width:${cw[c] || 80}px">`).join("");
+    const rules = (sh().cf || []).map(rule => {
+      const [r0, c0, r1, c1] = rule.range, vs = [], cnt = {};
+      for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) { const x = val(cellKey(r, c)); if (typeof x === "number") vs.push(x); if (x !== "") cnt[x] = (cnt[x] || 0) + 1; }
+      const sorted = [...vs].sort((a, b) => b - a);
+      return { ...rule, min: Math.min(...vs), max: Math.max(...vs), cnt, top: sorted[Math.min(sorted.length, +rule.a || 10) - 1] };
+    });
+    const cfStyle = (r, c, v) => {
+      let st = "";
+      for (const R of rules) {
+        const [r0, c0, r1, c1] = R.range; if (r < r0 || r > r1 || c < c0 || c > c1) continue;
+        const n = typeof v === "number", a = num(R.a), b = num(R.b), col = R.color || "#ffc7ce";
+        const hit = R.type === "gt" ? n && v > a : R.type === "lt" ? n && v < a : R.type === "between" ? n && v >= a && v <= b : R.type === "eq" ? String(v) === String(R.a) || (n && v === a) : R.type === "contains" ? String(v).toLowerCase().includes(String(R.a).toLowerCase()) : R.type === "dup" ? v !== "" && R.cnt[v] > 1 : R.type === "top" ? n && v >= R.top : false;
+        if (hit) st += `background:${col};color:${shade(col)};`;
+        if (R.type === "bar" && n) { const p = R.max === R.min ? 100 : Math.max(0, (v - Math.min(0, R.min)) / (R.max - Math.min(0, R.min)) * 100); st += `background:linear-gradient(90deg,${col}cc 0 ${p}%,transparent ${p}%);`; }
+        if (R.type === "scale" && n) { const p = R.max === R.min ? .5 : (v - R.min) / (R.max - R.min); st += `background:${p < .5 ? mix("#f8696b", "#ffeb84", p * 2) : mix("#ffeb84", "#63be7b", (p - .5) * 2)};`; }
+      }
+      return st;
+    };
     for (let r = 0; r < XROWS; r++) for (let c = 0; c < XCOLS; c++) {
       const k = cellKey(r, c), cell = cells()[k], td = tds[r][c];
       if (!cell) { if (td.textContent || td.className || td.style.cssText) { td.textContent = ""; td.className = ""; td.style.cssText = ""; } continue; }
       const v = val(k), s = cell.s || {};
       td.textContent = showFormulas && String(cell.v)[0] === "=" ? cell.v : display(v, s);
       td.className = (typeof v === "number" && !s.al ? "num " : "") + (s.wr ? "wr " : "") + (s.bd ? "bd " : "") + (typeof v === "string" && v[0] === "#" ? "err" : "");
-      td.style.cssText = `${s.b ? "font-weight:700;" : ""}${s.i ? "font-style:italic;" : ""}${s.u ? "text-decoration:underline;" : ""}${s.bg ? `background:${s.bg};` : ""}${s.fg ? `color:${s.fg};` : ""}${s.al ? `text-align:${s.al};` : ""}${s.fs ? `font-size:${s.fs}pt;` : ""}${s.ff ? `font-family:${s.ff};` : ""}${s.st || ""}`;
+      td.style.cssText = `${s.b ? "font-weight:700;" : ""}${s.i ? "font-style:italic;" : ""}${s.u ? "text-decoration:underline;" : ""}${s.bg ? `background:${s.bg};` : ""}${s.fg ? `color:${s.fg};` : ""}${s.al ? `text-align:${s.al};` : ""}${s.fs ? `font-size:${s.fs}pt;` : ""}${s.ff ? `font-family:${s.ff};` : ""}${s.st || ""}${rules.length ? cfStyle(r, c, v) : ""}`;
     }
+    const af = sh().af;
+    for (let r = 1; r < XROWS; r++) tbody.rows[r].style.display = af && r > af.r && Object.entries(af.hide).some(([c, hs]) => hs.includes(String(val(cellKey(r, +c))))) ? "none" : "";
+    $$(".xfb", grid).forEach(x => x.remove());
+    if (af) for (let c = af.c0; c <= af.c1; c++) { const b = h(`<span class="xfb ${af.hide[c] && af.hide[c].length ? "on" : ""}" data-fc="${c}" title="Filtrer">${svg("down", 11)}</span>`); tds[af.r][c].append(b); }
     tbody.rows[0].classList.toggle("frz", freeze);
     wrap.classList.toggle("nogrid", !showGrid);
     $(".xsheets", api.content).innerHTML = book.sheets.map((s, i) => `<button class="${i === cur ? "sel" : ""}" data-i="${i}">${esc(s.name)}</button>`).join("") + `<button data-add title="Nouvelle feuille">${svg("plus", 13)}</button>`;
@@ -192,6 +319,7 @@ function TableurApp(body, w, arg) {
     for (let r = r0; r <= r1; r++) tbody.rows[r].cells[0].classList.add("hs");
     const a = tds[r0][c0], b = tds[r1][c1];
     Object.assign(boxAct.style, { left: a.offsetLeft - 1 + "px", top: a.offsetTop - 1 + "px", width: b.offsetLeft + b.offsetWidth - a.offsetLeft + 1 + "px", height: b.offsetTop + b.offsetHeight - a.offsetTop + 1 + "px" });
+    Object.assign(fillH.style, { left: b.offsetLeft + b.offsetWidth - 5 + "px", top: b.offsetTop + b.offsetHeight - 5 + "px", zoom: zoom / 100 });
     const k = cellKey(act[0], act[1]);
     nbox.value = r0 !== r1 || c0 !== c1 ? `${cellKey(r0, c0)}:${cellKey(r1, c1)}` : k;
     if (document.activeElement !== fin) fin.value = cells()[k]?.v ?? "";
@@ -237,6 +365,7 @@ function TableurApp(body, w, arg) {
     drawSel(); tds[act[0]][act[1]].scrollIntoView({ block: "nearest", inline: "nearest" });
   }
   wrap.addEventListener("mousedown", (e) => {
+    const fb = e.target.closest(".xfb"); if (fb) { e.preventDefault(); e.stopPropagation(); return filterMenu(+fb.dataset.fc); }
     const td = e.target.closest("td"); if (!td) return;
     const r = +td.dataset.r, c = +td.dataset.c;
     if (editor && /^=/.test(editor.value) && /[=+\-*/(;,:^&<>]$/.test(editor.value)) { e.preventDefault(); refMode = true; editor.value += cellKey(r, c); fin.value = editor.value; editor.focus(); setTimeout(() => refMode = false, 150); return; }
@@ -318,6 +447,29 @@ function TableurApp(body, w, arg) {
     $("button", ch).onclick = () => ch.remove();
     $(".ch", ch).onmousedown = (e) => { const sx = e.clientX - ch.offsetLeft, sy = e.clientY - ch.offsetTop; const mv = (ev) => { ch.style.left = ev.clientX - sx + "px"; ch.style.top = ev.clientY - sy + "px"; }; const up = () => { removeEventListener("mousemove", mv); removeEventListener("mouseup", up); }; addEventListener("mousemove", mv); addEventListener("mouseup", up); };
   }
+  function filterMenu(c) {
+    const af = sh().af, values = [...new Set(Array.from({ length: XROWS - af.r - 1 }, (_, i) => String(val(cellKey(af.r + 1 + i, c)))))].filter(v => v !== "").sort((a, b) => a.localeCompare(b, locale(), { numeric: true }));
+    const hidden = af.hide[c] || [];
+    const bg = h(`<div class="sheetbg"><div class="sheet"><h3>Filtrer la colonne ${colName(c)}</h3><div class="crow" style="gap:6px;margin-bottom:8px"><button class="btn ghost" data-s="az">${svg("sortaz", 14)} Trier A → Z</button><button class="btn ghost" data-s="za">${svg("sortza", 14)} Trier Z → A</button></div>
+      <input class="txt" placeholder="Rechercher" style="width:100%;margin-bottom:6px"><label style="display:flex;gap:6px;color:var(--text)"><input type="checkbox" data-all ${hidden.length ? "" : "checked"}> (Sélectionner tout)</label><div style="max-height:220px;overflow:auto">${values.map(v => `<label style="display:flex;gap:6px;color:var(--text);margin:2px 0" data-lv="${esc(v.toLowerCase())}"><input type="checkbox" value="${esc(v)}" ${hidden.includes(v) ? "" : "checked"}> ${esc(v)}</label>`).join("")}</div>
+      <div class="acts"><button class="btn ghost" data-x>Annuler</button><button class="btn" data-ok>OK</button></div></div></div>`);
+    w.append(bg);
+    const boxes = () => $$('input[type=checkbox]:not([data-all])', bg);
+    $("[data-all]", bg).onchange = (e) => boxes().forEach(b => b.checked = e.target.checked);
+    $("input.txt", bg).oninput = (e) => $$("[data-lv]", bg).forEach(l => l.style.display = l.dataset.lv.includes(e.target.value.toLowerCase()) ? "" : "none");
+    $("[data-x]", bg).onclick = () => bg.remove();
+    $("[data-ok]", bg).onclick = () => { af.hide[c] = boxes().filter(b => !b.checked).map(b => b.value); bg.remove(); api.dirty(); render(); };
+    $$("[data-s]", bg).forEach(b => b.onclick = () => { bg.remove(); anchor = [af.r + 1, af.c0]; act = [XROWS - 1, af.c1]; const save2 = [anchor, act]; let last = af.r + 1; for (let r = af.r + 1; r < XROWS; r++) for (let cc = af.c0; cc <= af.c1; cc++) if (cells()[cellKey(r, cc)]) last = r; act = [last, af.c1]; const keyCol = c; const [ra, , rb] = sel(); snap(); const rows = []; for (let r = ra; r <= rb; r++) rows.push(Array.from({ length: af.c1 - af.c0 + 1 }, (_, j) => cells()[cellKey(r, af.c0 + j)])); memo = {}; rows.sort((x, y) => { const p = x[keyCol - af.c0] ? lit(x[keyCol - af.c0].v) : "", q = y[keyCol - af.c0] ? lit(y[keyCol - af.c0].v) : ""; const res = typeof p === "number" && typeof q === "number" ? p - q : String(p).localeCompare(String(q), locale(), { numeric: true }); return b.dataset.s === "za" ? -res : res; }); rows.forEach((row, i) => row.forEach((cell, j) => { const k = cellKey(ra + i, af.c0 + j); if (cell) cells()[k] = cell; else delete cells()[k]; })); render(); });
+  }
+  async function condFormat() {
+    const types = { "Supérieur à…": "gt", "Inférieur à…": "lt", "Entre…": "between", "Égal à…": "eq", "Texte qui contient…": "contains", "Valeurs en double": "dup", "10 valeurs les plus élevées": "top", "Barres de données": "bar", "Nuances de couleurs (rouge → vert)": "scale", "Effacer les règles de la feuille": "clear" };
+    const colors = { "Rouge clair": "#ffc7ce", "Jaune": "#ffeb9c", "Vert": "#c6efce", "Bleu": "#9bc2e6", "Orange": "#f8cbad", "Violet": "#d9c3e9" };
+    const r = await dialog(w, "Mise en forme conditionnelle", [{ k: "t", l: "Règle", type: "select", o: Object.keys(types) }, { k: "a", l: "Valeur (ou nombre de valeurs pour « les plus élevées »)", v: "10" }, { k: "b", l: "Et (pour « Entre »)", v: "" }, { k: "c", l: "Couleur", type: "select", o: Object.keys(colors) }], "Appliquer");
+    if (!r) return; snap();
+    if (types[r.t] === "clear") { sh().cf = []; return render(); }
+    (sh().cf ||= []).push({ range: sel(), type: types[r.t], a: r.a, b: r.b, color: colors[r.c] });
+    render(); notify("tableur", "Mise en forme conditionnelle", r.t.replace("…", "") + " appliquée à " + nbox.value);
+  }
   function insertFn(name) { const [r0, c0, r1, c1] = sel(); if (r0 !== r1 || c0 !== c1) { const k = cellKey(Math.min(XROWS - 1, r1 + 1), c0); act = anchor = parseKey(k); setCell(k, `=${name}(${cellKey(r0, c0)}:${cellKey(r1, c1)})`); drawSel(); } else startEdit(`=${name}(`); }
   function autoSum() {
     const [r0, c0, r1, c1] = sel();
@@ -373,7 +525,9 @@ function TableurApp(body, w, arg) {
       case "autosum": return autoSum();
       case "sortaz": return sortSel(false);
       case "sortza": return sortSel(true);
-      case "filter": { const r = await dialog(w, "Filtrer", [{ k: "q", l: `Afficher les lignes dont la colonne ${colName(sel()[1])} contient (vide = tout afficher)` }], "Filtrer"); if (!r) return; for (let rr = 1; rr < XROWS; rr++) tbody.rows[rr].style.display = r.q && !String(val(cellKey(rr, sel()[1]))).toLowerCase().includes(r.q.toLowerCase()) ? "none" : ""; return drawSel(); }
+      case "cf": return condFormat();
+      case "filter": { if (sh().af) { delete sh().af; return render(); } const [r0, c0, , c1] = sel(); let a = c0, b = c1; if (a === b) { while (a > 0 && cells()[cellKey(r0, a - 1)]) a--; while (b < XCOLS - 1 && cells()[cellKey(r0, b + 1)]) b++; } snap(); sh().af = { r: r0, c0: a, c1: b, hide: {} }; render(); return notify("tableur", "Filtres", "Clique sur les flèches de la ligne " + (r0 + 1) + " pour filtrer."); }
+      case "filter-old": { const r = await dialog(w, "Filtrer", [{ k: "q", l: `Afficher les lignes dont la colonne ${colName(sel()[1])} contient (vide = tout afficher)` }], "Filtrer"); if (!r) return; for (let rr = 1; rr < XROWS; rr++) tbody.rows[rr].style.display = r.q && !String(val(cellKey(rr, sel()[1]))).toLowerCase().includes(r.q.toLowerCase()) ? "none" : ""; return drawSel(); }
       case "dedup": { snap(); const [r0, c0, r1, c1] = sel(); const seen = new Set(); let n = 0; for (let r = r0; r <= r1; r++) { const sig = Array.from({ length: c1 - c0 + 1 }, (_, j) => String(val(cellKey(r, c0 + j)))).join("\u0001"); if (seen.has(sig)) { for (let cc = c0; cc <= c1; cc++) delete cells()[cellKey(r, cc)]; n++; } else seen.add(sig); } render(); return notify("tableur", "Doublons", `${n} ligne(s) en double supprimée(s).`); }
       case "split": { snap(); const [r0, c0, r1] = sel(); for (let r = r0; r <= r1; r++) { const parts = String(cells()[cellKey(r, c0)]?.v ?? "").split(/[;,\t]/); if (parts.length > 1) parts.forEach((p, j) => { if (c0 + j < XCOLS) ensure(cellKey(r, c0 + j)).v = p.trim(); }); } return render(); }
       case "fx": {

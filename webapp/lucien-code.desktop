@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lucien Code
+Comment=Éditeur de code
+Exec=lucien-webapp code
+Icon=accessories-text-editor
+Type=Application
+Categories=Development;IDE;TextEditor;
+StartupWMClass=lucien-webapp

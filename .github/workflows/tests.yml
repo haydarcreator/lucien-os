@@ -6,6 +6,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: python3 -m py_compile lsh/lsh.py lpm/lpm.py antivirus/lucien-av.py settings/lucien-settings.py browser/lucien-browser.py
+      - run: python3 -m py_compile lsh/lsh.py lpm/lpm.py antivirus/lucien-av.py settings/lucien-settings.py browser/lucien-browser.py webapp/lucien-webapp.py
       - run: bash tests/run.sh
       - run: shellcheck -S error build/*.sh

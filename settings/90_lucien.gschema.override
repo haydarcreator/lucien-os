@@ -20,7 +20,7 @@ picture-uri-dark='file:///usr/share/backgrounds/lucien/sombre.svg'
 picture-uri='file:///usr/share/backgrounds/lucien/clair.svg'
 
 [org.gnome.shell]
-favorite-apps=['org.gnome.Nautilus.desktop', 'lucien-shell.desktop', 'lucien-browser.desktop', 'lucien-texte.desktop', 'lucien-tableur.desktop', 'lucien-presentation.desktop', 'lucien-antivirus.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop']
+favorite-apps=['org.gnome.Nautilus.desktop', 'lucien-shell.desktop', 'lucien-browser.desktop', 'lucien-texte.desktop', 'lucien-tableur.desktop', 'lucien-presentation.desktop', 'lucien-calc.desktop', 'lucien-code.desktop', 'lucien-antivirus.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop']
 
 [org.gnome.shell.extensions.dash-to-dock]
 dock-position='BOTTOM'

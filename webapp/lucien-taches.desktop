@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lucien Tâches
+Comment=Listes de tâches
+Exec=lucien-webapp taches
+Icon=checkbox-checked-symbolic
+Type=Application
+Categories=Office;ProjectManagement;
+StartupWMClass=lucien-webapp

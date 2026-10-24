@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lucien Formulaires
+Comment=Sondages, quiz et formulaires
+Exec=lucien-webapp formulaires
+Icon=x-office-document
+Type=Application
+Categories=Office;Education;
+StartupWMClass=lucien-webapp

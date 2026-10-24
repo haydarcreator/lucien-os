@@ -248,7 +248,9 @@ function tickClock() {
 
 /* ================= Démarrage et alimentation ================= */
 const BOOTLOG = ["[  OK  ] Noyau Linux 6.8 chargé", "[  OK  ] Montage de /", "[  OK  ] Démarrage de udev", "[  OK  ] Réseau (NetworkManager)", "[  OK  ] Lucien Antivirus (temps réel)", "[  OK  ] lpm-daemon", "[  OK  ] Session graphique Lucien"];
+let sessionOpen = false;
 async function boot() {
+  sessionOpen = false;
   Object.keys(openWins).forEach(id => { openWins[id].remove(); delete openWins[id]; });
   $("#off")?.remove();
   $("#desktop").classList.add("hidden"); $("#login").classList.add("hidden");
@@ -257,10 +259,12 @@ async function boot() {
   for (let i = 0; i < BOOTLOG.length; i++) { bar.style.width = ((i + 1) / BOOTLOG.length * 100) + "%"; log.textContent = BOOTLOG[i]; await sleep(240 + Math.random() * 200); }
   await sleep(300);
   b.classList.add("fadeout"); await sleep(500); b.classList.add("hidden");
+  if (sessionOpen) return;
   if (S.autoLogin) return enterDesktop();
   const lg = $("#login"); lg.classList.remove("hidden", "leave"); $("#lgPass").value = ""; $("#lgPass").focus();
 }
 async function enterDesktop() {
+  sessionOpen = true; $("#boot").classList.add("hidden");
   const lg = $("#login"); lg.classList.add("leave");
   const d = $("#desktop"); d.classList.remove("hidden"); d.classList.add("enter");
   applyTheme(); buildDock(); buildIcons(); setMenuApp();
