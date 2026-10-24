@@ -3,11 +3,11 @@
 
 # Autonomie : TLP remplace power-profiles-daemon
 apt-get purge -y power-profiles-daemon 2>/dev/null || true
-systemctl enable tlp.service
+systemctl enable tlp.service 2>/dev/null || true
 sed -i 's/^#\?START_CHARGE_THRESH_BAT0=.*/START_CHARGE_THRESH_BAT0=75/; s/^#\?STOP_CHARGE_THRESH_BAT0=.*/STOP_CHARGE_THRESH_BAT0=80/' /etc/tlp.conf
 
 # Gestes du pavé tactile façon macOS (3 doigts = vue d'ensemble, 4 doigts = bureaux)
-systemctl enable touchegg.service
+systemctl enable touchegg.service 2>/dev/null || true
 
 cat > /usr/share/glib-2.0/schemas/91_lucien-laptop.gschema.override <<'EOF'
 [org.gnome.desktop.interface]

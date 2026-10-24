@@ -18,7 +18,7 @@ ExecStart=/bin/sh -c 'dev=$(findmnt -no SOURCE /); disk=/dev/$(lsblk -no PKNAME 
 WantedBy=multi-user.target
 EOF
 apt-get install -y cloud-guest-utils
-systemctl enable lucien-agrandir.service
+systemctl enable lucien-agrandir.service || true
 
 # Mémoire compressée (zram) pour les modèles 4 Go
 apt-get install -y zram-tools
