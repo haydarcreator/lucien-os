@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Bonjour
+Exec=lucien-terminal -e bonjour
+Icon=lucien
+Type=Application
+Categories=Utility;

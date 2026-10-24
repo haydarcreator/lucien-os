@@ -1,0 +1,10 @@
+# PC de bureau (amd64) : démarrage live + installateur, pilotes graphiques, jeux
+linux-generic
+casper
+grub-efi-amd64-signed
+shim-signed
+grub-pc-bin
+calamares
+mesa-vulkan-drivers
+gamemode
+linux-firmware

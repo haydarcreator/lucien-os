@@ -1,0 +1,10 @@
+# Raspberry Pi 5 (arm64)
+linux-raspi
+linux-firmware-raspi
+libraspberrypi-bin
+rpi-eeprom
+pi-bluetooth
+wpasupplicant
+network-manager
+mesa-utils
+gstreamer1.0-plugins-good

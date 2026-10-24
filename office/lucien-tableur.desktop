@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Lucien Tableur
+GenericName=Feuilles de calcul
+Comment=Feuilles de calcul — Lucien Office
+Exec=libreoffice --calc %U
+Icon=x-office-spreadsheet
+Type=Application
+Categories=Office;
+StartupWMClass=libreoffice-calc

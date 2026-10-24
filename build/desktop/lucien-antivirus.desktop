@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Lucien Antivirus
+Comment=Analyser le dossier personnel
+Exec=gnome-terminal -- sh -c 'lucien-av etat; echo; lucien-av scan ~; echo; read -p "Entrée pour fermer" x'
+Icon=security-high
+Type=Application
+Categories=System;Security;

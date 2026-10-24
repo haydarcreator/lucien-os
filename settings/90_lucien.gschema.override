@@ -1,0 +1,40 @@
+# Réglages par défaut de Lucien OS : look macOS sur GNOME
+[org.gnome.desktop.interface]
+color-scheme='default'
+gtk-theme='WhiteSur-Light'
+icon-theme='WhiteSur'
+cursor-theme='WhiteSur-cursors'
+font-name='Inter 11'
+clock-format='24h'
+enable-hot-corners=true
+
+[org.gnome.desktop.wm.preferences]
+button-layout='close,minimize,maximize:'
+titlebar-font='Inter Bold 11'
+
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/backgrounds/lucien/clair.svg'
+picture-uri-dark='file:///usr/share/backgrounds/lucien/sombre.svg'
+
+[org.gnome.desktop.screensaver]
+picture-uri='file:///usr/share/backgrounds/lucien/clair.svg'
+
+[org.gnome.shell]
+favorite-apps=['org.gnome.Nautilus.desktop', 'lucien-shell.desktop', 'lucien-browser.desktop', 'lucien-texte.desktop', 'lucien-tableur.desktop', 'lucien-presentation.desktop', 'lucien-antivirus.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop']
+
+[org.gnome.shell.extensions.dash-to-dock]
+dock-position='BOTTOM'
+extend-height=false
+dock-fixed=false
+autohide=true
+intellihide=true
+dash-max-icon-size=48
+show-trash=true
+show-mounts=false
+transparency-mode='DYNAMIC'
+custom-theme-shrink=true
+click-action='minimize'
+
+[org.gnome.desktop.peripherals.touchpad]
+tap-to-click=true
+natural-scroll=true

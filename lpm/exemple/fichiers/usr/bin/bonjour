@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "Bonjour depuis un paquet .lcn !"

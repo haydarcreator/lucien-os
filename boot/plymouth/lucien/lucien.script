@@ -1,0 +1,45 @@
+# Écran de démarrage Lucien OS (Plymouth)
+Window.SetBackgroundTopColor(0, 0, 0);
+Window.SetBackgroundBottomColor(0, 0, 0);
+
+W = Window.GetWidth();
+H = Window.GetHeight();
+
+logo.image = Image("logo.png");
+size = Math.Min(W, H) / 5;
+logo.image = logo.image.Scale(size, size * logo.image.GetHeight() / logo.image.GetWidth());
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetPosition((W - logo.image.GetWidth()) / 2, H / 2 - logo.image.GetHeight(), 1);
+
+bar_w = Math.Min(220, W / 3);
+bar_y = H / 2 + 50;
+track.image = Image("barre-fond.png").Scale(bar_w, 5);
+track.sprite = Sprite(track.image);
+track.sprite.SetPosition((W - bar_w) / 2, bar_y, 1);
+
+fill.raw = Image("barre.png");
+fill.sprite = Sprite();
+fill.sprite.SetPosition((W - bar_w) / 2, bar_y, 2);
+
+fun progress_cb(duration, progress) {
+  w = Math.Int(bar_w * progress);
+  if (w < 1) w = 1;
+  fill.sprite.SetImage(fill.raw.Scale(w, 5));
+}
+Plymouth.SetBootProgressFunction(progress_cb);
+
+# Saisie du mot de passe de chiffrement du disque (LUKS)
+fun password_cb(prompt, bullets) {
+  msg.image = Image.Text(prompt + "  " + bullets_str(bullets), 0.9, 0.9, 0.9);
+  msg.sprite = Sprite(msg.image);
+  msg.sprite.SetPosition((W - msg.image.GetWidth()) / 2, bar_y + 40, 3);
+}
+fun bullets_str(n) { s = ""; for (i = 0; i < n; i++) s += "•"; return s; }
+Plymouth.SetDisplayPasswordFunction(password_cb);
+
+fun message_cb(text) {
+  m.image = Image.Text(text, 0.5, 0.5, 0.5);
+  m.sprite = Sprite(m.image);
+  m.sprite.SetPosition((W - m.image.GetWidth()) / 2, H - 60, 3);
+}
+Plymouth.SetMessageFunction(message_cb);

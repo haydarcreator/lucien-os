@@ -1,0 +1,52 @@
+# Paquets présents dans toutes les éditions de Lucien OS
+ubuntu-standard
+gnome-shell
+gnome-session
+gdm3
+gnome-control-center
+gnome-terminal
+gnome-software
+gnome-software-plugin-flatpak
+nautilus
+gnome-shell-extension-ubuntu-dock
+gnome-shell-extension-appindicator
+gnome-tweaks
+network-manager-gnome
+pipewire-audio
+wireplumber
+bluez
+cups
+plymouth
+plymouth-label
+fonts-inter
+fonts-noto-color-emoji
+language-pack-fr
+language-pack-gnome-fr
+locales
+sudo
+git
+curl
+nano
+flatpak
+# Lucien Browser
+python3
+python3-gi
+gir1.2-gtk-3.0
+gir1.2-webkit2-4.1
+# Lucien Antivirus
+clamav
+clamav-freshclam
+inotify-tools
+libnotify-bin
+ufw
+# Installation de paquets .deb (apt) et .lcn (lpm)
+apt-transport-https
+gdebi-core
+# Lucien Office (LibreOffice avec ruban, formats Microsoft Office par défaut)
+libreoffice-writer
+libreoffice-calc
+libreoffice-impress
+libreoffice-gtk3
+libreoffice-l10n-fr
+fonts-crosextra-carlito
+fonts-crosextra-caladea

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Lucien Présentation
+GenericName=Présentations et diaporamas
+Comment=Présentations et diaporamas — Lucien Office
+Exec=libreoffice --impress %U
+Icon=x-office-presentation
+Type=Application
+Categories=Office;
+StartupWMClass=libreoffice-impress

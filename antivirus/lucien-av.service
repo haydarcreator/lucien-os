@@ -1,0 +1,13 @@
+[Unit]
+Description=Lucien Antivirus — protection en temps réel
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/lucien-av surveille
+Restart=on-failure
+Environment=LUCIEN_AV_DB=%h/.local/share/lucien-av
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=default.target

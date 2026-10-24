@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Lucien Texte
+GenericName=Traitement de texte
+Comment=Traitement de texte — Lucien Office
+Exec=libreoffice --writer %U
+Icon=x-office-document
+Type=Application
+Categories=Office;
+StartupWMClass=libreoffice-writer

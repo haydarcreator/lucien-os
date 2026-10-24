@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Lucien Browser
+Comment=Navigateur web rapide et privé
+Exec=lucien-browser %U
+Icon=web-browser
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
+StartupNotify=true

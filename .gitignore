@@ -1,0 +1,6 @@
+work/
+out/
+*.iso
+*.img
+*.img.xz
+__pycache__/

@@ -1,0 +1,7 @@
+# ~/.lshrc — configuration de Lucien Shell
+alias ll = liste -l
+alias maj = lpm maj
+soit EDITEUR = nano
+
+# Exemple : essaie une commande, sinon une autre
+# essaie lpm maj sinon dis "pas de réseau"

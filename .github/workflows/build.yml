@@ -1,0 +1,37 @@
+# Construit les trois éditions et les joint à une release quand on pousse un tag v*
+name: Images Lucien OS
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { edition: pc,     runner: ubuntu-24.04 }
+          - { edition: laptop, runner: ubuntu-24.04 }
+          - { edition: pi5,    runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Libérer de la place
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
+      - name: Construire ${{ matrix.edition }}
+        run: sudo ./build/build.sh ${{ matrix.edition }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lucien-os-${{ matrix.edition }}
+          path: out/*
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: out, merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with: { files: out/* }

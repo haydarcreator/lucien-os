@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lucien Shell
+Comment=Le terminal de Lucien OS
+Exec=gnome-terminal -- /usr/bin/lsh
+Icon=utilities-terminal
+Type=Application
+Categories=System;TerminalEmulator;
+Keywords=terminal;shell;lsh;

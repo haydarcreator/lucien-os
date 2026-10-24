@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Lucien OS
+Description=Écran de démarrage de Lucien OS : logo os + barre de progression
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/lucien
+ScriptFile=/usr/share/plymouth/themes/lucien/lucien.script

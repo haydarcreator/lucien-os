@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucien OS</title>
+<meta name="description" content="Démo interactive de Lucien OS : un système Linux au style macOS pour Raspberry Pi 5, PC et laptop.">
+<link rel="icon" href="assets/logo.webp">
+<link rel="stylesheet" href="css/lucien.css">
+<link rel="stylesheet" href="css/office.css">
+</head>
+<body>
+
+<!-- Écran de démarrage -->
+<div id="boot">
+  <img src="assets/logo.webp" alt="Logo Lucien OS">
+  <div class="bar"><i></i></div>
+  <div class="log"></div>
+</div>
+
+<!-- Écran de connexion -->
+<div id="login" class="hidden">
+  <div class="clock"><div class="d" id="lgDate"></div><div class="t" id="lgTime"></div></div>
+  <div class="who">
+    <div class="avatar"></div>
+    <div class="name">Lucien</div>
+    <form id="lgForm"><input type="password" id="lgPass" placeholder="Mot de passe" autocomplete="off"><button class="go" aria-label="Se connecter" id="lgGo"></button></form>
+    <div class="hint">Démo : tape n'importe quel mot de passe puis Entrée</div>
+  </div>
+  <div class="bottom">
+    <button data-act="sleep"><span data-i="moon"></span>Suspendre</button>
+    <button data-act="restart"><span data-i="restart"></span>Redémarrer</button>
+    <button data-act="shutdown"><span data-i="power"></span>Éteindre</button>
+  </div>
+</div>
+
+<!-- Bureau -->
+<div id="desktop" class="hidden">
+  <div id="menubar">
+    <div class="m logo" data-menu="lucien" title="Menu Lucien"></div>
+    <div class="m app" id="mbApp">Fichiers</div>
+    <div class="m opt" data-menu="fichier">Fichier</div>
+    <div class="m opt" data-menu="edition">Édition</div>
+    <div class="m opt" data-menu="presentation">Présentation</div>
+    <div class="m opt" data-menu="aller">Aller</div>
+    <div class="m opt" data-menu="fenetre">Fenêtre</div>
+    <div class="m opt" data-menu="aide">Aide</div>
+    <div class="sp"></div>
+    <div class="m opt" id="mbBat"></div>
+    <div class="m opt" id="mbWifi"></div>
+    <div class="m" id="mbSearch" title="Recherche (Ctrl+Espace)"></div>
+    <div class="m" id="mbCC" title="Centre de contrôle"></div>
+    <div class="m" id="mbClock"></div>
+  </div>
+  <div id="icons"></div>
+  <div id="wins"></div>
+  <div id="dock"></div>
+  <div id="notifs"></div>
+</div>
+
+<div id="overlay"></div>
+
+<script src="js/core.js"></script>
+<script src="js/apps.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/office.js"></script>
+<script src="js/office-texte.js"></script>
+<script src="js/office-tableur.js"></script>
+<script src="js/office-presentation.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

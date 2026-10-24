@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Installer un paquet Lucien
+Exec=gnome-terminal -- sh -c 'sudo lpm installe "$1"; read -p "Entrée pour fermer" x' _ %f
+Icon=package-x-generic
+Type=Application
+NoDisplay=true
+MimeType=application/x-lucien-package;application/vnd.debian.binary-package;

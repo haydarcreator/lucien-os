@@ -1,0 +1,9 @@
+{
+  "nom": "bonjour",
+  "version": "1.0.0",
+  "arch": "all",
+  "description": "Paquet d'exemple : affiche un message de bienvenue",
+  "auteur": "Lucien OS",
+  "licence": "MIT",
+  "dependances": []
+}

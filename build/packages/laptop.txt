@@ -1,0 +1,16 @@
+# Laptop (amd64) : comme le PC + autonomie, gestes, Wi-Fi, lecteur d'empreintes
+linux-generic-hwe-24.04
+casper
+grub-efi-amd64-signed
+shim-signed
+grub-pc-bin
+calamares
+mesa-vulkan-drivers
+linux-firmware
+tlp
+tlp-rdw
+touchegg
+fprintd
+libpam-fprintd
+iio-sensor-proxy
+brightnessctl

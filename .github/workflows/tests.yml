@@ -1,0 +1,11 @@
+# Vérifie les outils Lucien (lsh, lpm, lucien-av) à chaque push
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m py_compile lsh/lsh.py lpm/lpm.py antivirus/lucien-av.py settings/lucien-settings.py browser/lucien-browser.py
+      - run: bash tests/run.sh
+      - run: shellcheck -S error build/*.sh
