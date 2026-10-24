@@ -21,7 +21,7 @@
     <p class="lead">Un système Linux élégant comme macOS, pour Raspberry Pi 5, PC et laptop. Avec sa suite bureautique, son shell, son navigateur et son antivirus.</p>
     <div class="cta">
       <a class="btn primary" href="demo/" data-start><span data-i="play" data-s="16"></span> Tester maintenant</a>
-      <a class="btn soft" href="#editions"><span data-i="download" data-s="16"></span> Obtenir Lucien OS</a>
+      <a class="btn soft" href="https://github.com/haydarcreator/lucien-os/releases/download/v1.0/lucien-os-1.0-laptop-amd64.iso"><span data-i="download" data-s="16"></span> Télécharger (laptop)</a>
     </div>
     <div class="device reveal" id="essayer">
       <div class="screen">
@@ -78,15 +78,28 @@
     <div class="grid">
       <div class="card ed reveal"><div class="tile g-app"><span data-i="cpu"></span></div><h3>Raspberry Pi 5</h3><span class="tag">arm64 · image carte SD / SSD NVMe</span>
         <ul><li>SSD NVMe via le port PCIe</li><li>Ventilateur actif géré automatiquement</li><li>Mémoire compressée (zram)</li><li>Partition agrandie au premier démarrage</li></ul>
-        <a class="btn soft sm" href="https://github.com/haydarcreator/lucien-os#construire-une-image" rel="noopener"><span data-i="download" data-s="15"></span> Obtenir l'image</a></div>
+        <span class="btn soft sm" style="opacity:.6;cursor:default"><span data-i="clock" data-s="15"></span> Bientôt disponible</span></div>
       <div class="card ed reveal" data-d="80"><div class="tile g-set"><span data-i="display"></span></div><h3>PC de bureau</h3><span class="tag">amd64 · ISO live + installateur</span>
         <ul><li>Pilotes graphiques Mesa et Vulkan</li><li>GameMode pour les jeux</li><li>Démarrage UEFI et BIOS</li><li>Installateur graphique avec chiffrement</li></ul>
-        <a class="btn soft sm" href="https://github.com/haydarcreator/lucien-os#construire-une-image" rel="noopener"><span data-i="download" data-s="15"></span> Obtenir l'ISO</a></div>
+        <span class="btn soft sm" style="opacity:.6;cursor:default"><span data-i="clock" data-s="15"></span> Bientôt disponible</span></div>
       <div class="card ed reveal" data-d="160"><div class="tile g-files"><span data-i="desktop"></span></div><h3>Laptop</h3><span class="tag">amd64 · ISO live + installateur</span>
         <ul><li>Autonomie optimisée (TLP)</li><li>Charge limitée à 80 % pour la batterie</li><li>Gestes du pavé tactile façon macOS</li><li>Lecteur d'empreintes digitales</li></ul>
-        <a class="btn soft sm" href="https://github.com/haydarcreator/lucien-os#construire-une-image" rel="noopener"><span data-i="download" data-s="15"></span> Obtenir l'ISO</a></div>
+        <a class="btn primary sm" href="https://github.com/haydarcreator/lucien-os/releases/download/v1.0/lucien-os-1.0-laptop-amd64.iso"><span data-i="download" data-s="15"></span> Télécharger l'ISO (1,8 Go)</a>
+        <a href="#installer" style="font-size:13px;margin-top:8px">Comment l'installer ?</a></div>
     </div>
-    <p class="hint reveal" style="text-align:center;margin-top:24px">Les images téléchargeables arrivent avec la première version publiée sur GitHub. En attendant, elles se construisent avec <code>sudo ./build/build.sh pi5|pc|laptop</code>.</p>
+    <p class="hint reveal" style="text-align:center;margin-top:24px">Version 1.0 en test : l'ISO laptop fonctionne aussi sur la plupart des PC. Les éditions PC et Raspberry Pi 5 arrivent bientôt.</p>
+    <div class="card reveal" id="installer" style="margin-top:28px">
+      <h3 style="margin-top:0">Installer Lucien OS sur un laptop</h3>
+      <ol style="color:var(--muted);line-height:1.9;margin:0;padding-left:20px">
+        <li>Téléchargez l'ISO ci-dessus (1,8 Go).</li>
+        <li>Écrivez-la sur une clé USB de 8 Go ou plus avec <b>balenaEtcher</b> ou <b>Rufus</b> (la clé sera effacée).</li>
+        <li>Branchez la clé, allumez le laptop et appuyez sur <b>F12</b>, <b>F9</b>, <b>Échap</b> ou <b>F2</b> pour choisir la clé USB.</li>
+        <li>Désactivez le <b>Secure Boot</b> dans le BIOS si la clé ne démarre pas.</li>
+        <li>Choisissez « Essayer ou installer Lucien OS » : vous pouvez tester sans rien toucher à votre disque.</li>
+        <li>Pour installer, lancez « Installer Lucien OS » sur le bureau. <b>Sauvegardez vos fichiers avant.</b></li>
+      </ol>
+      <p class="hint" style="margin:12px 0 0">Empreinte SHA-256 : <a href="https://github.com/haydarcreator/lucien-os/releases/download/v1.0/lucien-os-1.0-laptop-amd64.iso.sha256">lucien-os-1.0-laptop-amd64.iso.sha256</a></p>
+    </div>
   </div>
 </section>
 
